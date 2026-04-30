@@ -1,5 +1,7 @@
 import { supabase } from '../lib/supabase'
 
+export const revalidate = 3600;
+
 export default async function Page() {
   const { data: products, error } = await supabase
     .from('products')
