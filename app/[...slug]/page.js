@@ -8,12 +8,9 @@ export const revalidate = 3600;
 export async function generateMetadata({ params }) {
   const slugPath = (params.slug || []).join('/');
   const config = configData.pages.find(p => p.slug.join('/') === slugPath);
-  
   if (config) return { title: config.seo.title, description: config.seo.description };
-
   const { data: article } = await supabase.from('articles').select('theme').eq('slug', slugPath).single();
-  if (article) return { title: `${article.theme} | MUTHOS`, description: `Analyse technique Muthos sur ${article.theme}` };
-
+  if (article) return { title: `${article.theme} | MUTHOS` };
   return { title: "MUTHOS | Expertise Espresso" };
 }
 
@@ -21,38 +18,30 @@ export default async function DynamicPage({ params }) {
   const slugPath = (params.slug || []).join('/');
   const config = configData.pages.find(p => p.slug.join('/') === slugPath);
   
-  // 1. LOGIQUE PAGES JSON
   if (config) {
     if (config.template === 'product-grid') {
       const { data: products } = await supabase.from('products').select('*')
-        .ilike('brand', config.brand_filter || '%')
-        .eq('category', config.category_filter || 'espresso-premium')
+        .ilike('brand', config.brand_filter || '%').eq('category', config.category_filter || 'espresso-premium')
         .gt('price_current', 0).order('price_current', { ascending: false });
       return <ProductGridTemplate products={products || []} seo={config.seo} />;
     }
-
     if (config.template === 'comparison') {
       const { data: products } = await supabase.from('products').select('*').in('model', config.comparison_models);
       return <ComparisonTemplate products={products || []} seo={config.seo} />;
     }
-
     if (config.template === 'top-list') {
       const { data: products } = await supabase.from('products').select('*')
         .eq('category', config.category_filter || 'espresso-premium')
         .gt('price_current', 0).order('price_current', { ascending: false }).limit(10);
       return <TopListTemplate products={products || []} seo={config.seo} />;
     }
-
     if (config.template === 'faq') {
       return <FAQTemplate faqs={config.faqs} seo={config.seo} />;
     }
   }
 
-  // 2. LOGIQUE ARTICLES SUPABASE
   const { data: article } = await supabase.from('articles').select('*').eq('slug', slugPath).single();
-  if (article) {
-    return <ArticleTemplate article={article} />;
-  }
+  if (article) return <ArticleTemplate article={article} />;
 
   return notFound();
 }
