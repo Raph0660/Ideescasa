@@ -1,0 +1,14 @@
+{
+  "pages": [
+    {
+      "slug": ["espresso-premium"],
+      "template": "product-grid",
+      "data_source": "supabase",
+      "category_filter": "espresso-premium",
+      "seo": {
+        "title": "Machines Espresso Premium : Le Verdict Technique | MUTHOS",
+        "description": "Analyse de la stabilité thermique et de la qualité d'extraction des meilleures machines du marché."
+      }
+    }
+  ]
+}
