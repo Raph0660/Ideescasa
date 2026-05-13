@@ -39,7 +39,10 @@ export default async function ArticlePage({ params }) {
     );
   }
 
-  const readTime = Math.max(1, Math.ceil(article.content.split(/\s+/).length / 200));
+  // SÉCURITÉ : Nettoyage automatique des anciennes mentions "Muthos" dans le texte
+  const cleanContent = article.content.replaceAll(/Muthos/gi, 'Idées Casa');
+
+  const readTime = Math.max(1, Math.ceil(cleanContent.split(/\s+/).length / 200));
 
   return (
     <main className="min-h-screen bg-[#fdfbf7] text-[#1c1917] pb-24 border-t-[12px] border-[#1c1917]">
@@ -70,7 +73,7 @@ export default async function ArticlePage({ params }) {
           <div className="w-24 h-px bg-stone-300 mx-auto"></div>
         </header>
 
-        {/* RENDU HTML : C'est ici qu'on corrige l'affichage des balises */}
+        {/* RENDU HTML NETTOYÉ */}
         <div 
           className="font-light leading-relaxed text-[18px] md:text-[20px] text-stone-800 space-y-6
           [&>p:first-of-type::first-letter]:float-left [&>p:first-of-type::first-letter]:text-7xl 
@@ -78,7 +81,7 @@ export default async function ArticlePage({ params }) {
           [&>p:first-of-type::first-letter]:text-stone-900
           [&>h2]:text-3xl [&>h2]:font-serif [&>h2]:mt-12 [&>h2]:mb-4 [&>h2]:text-stone-900 [&>h2]:uppercase [&>h2]:tracking-tight
           [&>p]:mb-6 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-6"
-          dangerouslySetInnerHTML={{ __html: article.content }} 
+          dangerouslySetInnerHTML={{ __html: cleanContent }} 
         />
 
         <footer className="mt-24 pt-12 border-t border-stone-200 text-center">
