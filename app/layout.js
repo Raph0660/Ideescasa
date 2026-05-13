@@ -12,11 +12,11 @@ const playfair = Playfair_Display({
 });
 
 export const metadata = {
-  title: 'Idées Casa | - L'Art de l'Équipement Premium',
-  description: 'Expertise technique et comparateur des meilleurs équipements pour la maison. Spécialiste machines espresso haute performance.'],
+  title: "Idées Casa | L'Art de l'Équipement Premium",
+  description: "Expertise technique et comparateur des meilleurs équipements pour la maison. Spécialiste machines espresso haute performance.",
   icons: {
     icon: '/favicon.ico',
-  },
+  }
 };
 
 export default function RootLayout({ children }) {
