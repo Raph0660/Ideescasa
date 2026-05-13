@@ -1,4 +1,4 @@
-'use client'; // LA LIGNE INDISPENSABLE
+'use client'; 
 
 import React from 'react';
 
@@ -11,6 +11,7 @@ export default function ProductCard({ product }) {
   return (
     <article className="group">
       <a href={`/machines/${product.slug}`} className="block">
+        {/* Container Image : On garde un fond blanc propre sans le multiply qui assombrit */}
         <div className="aspect-[4/5] bg-white border border-stone-100 mb-8 overflow-hidden relative flex items-center justify-center p-12 transition-all duration-700 group-hover:shadow-2xl group-hover:shadow-stone-200">
           
           {hasPromo && reduction > 0 && (
@@ -22,7 +23,7 @@ export default function ProductCard({ product }) {
           <img
             src={product.image_url || fallbackImage}
             alt={`Machine à café ${product.brand} ${product.model}`}
-            className="w-full h-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-110"
+            className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110"
             onError={(e) => {
               e.target.src = fallbackImage;
               e.target.onerror = null; 
@@ -30,10 +31,22 @@ export default function ProductCard({ product }) {
           />
         </div>
 
-        <div className="space-y-2">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-amber-800">{product.brand}</p>
-          <h3 className="font-serif text-2xl uppercase tracking-tighter text-[#1a1a1a]">{product.model}</h3>
-          <p className="text-stone-400 font-light text-sm line-clamp-2 italic mb-4">{product.description}</p>
+        {/* Bloc Texte : Équilibrage visuel */}
+        <div className="space-y-1">
+          {/* Marque : Plus lisible et autoritaire */}
+          <p className="text-[12px] uppercase tracking-[0.2em] font-extrabold text-amber-800/80">
+            {product.brand}
+          </p>
+          
+          {/* Modèle : Humanisation des références techniques (ex: Smeg BCC13) */}
+          <h3 className="font-serif text-xl md:text-2xl uppercase tracking-tighter text-[#1a1a1a] leading-tight mb-2">
+            {product.model.length < 12 ? `Machine ${product.model}` : product.model}
+          </h3>
+          
+          {/* Description : Hauteur mini pour l'alignement des prix dans la grille */}
+          <p className="text-stone-400 font-light text-xs line-clamp-2 italic mb-4 min-h-[32px]">
+            {product.description}
+          </p>
           
           <div className="flex items-baseline gap-3">
             <p className="font-serif text-2xl text-red-600">
