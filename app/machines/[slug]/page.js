@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 export const revalidate = 86400; // ISR 24h
 
-// 1. GÉNÉRATION STATIQUE : Prépare les pages au build
+// 1. GÉNÉRATION STATIQUE
 export async function generateStaticParams() {
   const { data: products } = await supabase.from('products').select('slug').limit(20);
   return products?.map((p) => ({ slug: p.slug })) || [];
@@ -41,7 +41,6 @@ export default async function ProductPage({ params }) {
 
   return (
     <main className="min-h-screen bg-[#fdfbf7] pb-24">
-      {/* Navigation */}
       <nav className="py-6 px-6 border-b border-stone-200 sticky top-0 bg-[#fdfbf7]/90 backdrop-blur-sm z-50">
         <div className="max-w-6xl mx-auto text-left">
           <Link href="/" className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] font-bold text-stone-500 hover:text-stone-900 transition-colors">
@@ -52,9 +51,9 @@ export default async function ProductPage({ params }) {
 
       <div className="max-w-6xl mx-auto px-6 mt-12 grid grid-cols-1 lg:grid-cols-2 gap-16">
         
-        {/* COLONNE GAUCHE : VISUEL (CORRIGÉ) & SPECS */}
+        {/* COLONNE GAUCHE : VISUEL (RESTAURÉ COMME LA HOME) */}
         <div className="space-y-8">
-          <div className="bg-white border border-stone-100 p-8 md:p-12 aspect-square flex items-center justify-center relative shadow-sm">
+          <div className="bg-white border border-stone-100 p-8 md:p-12 aspect-square flex items-center justify-center relative shadow-sm overflow-hidden">
             {hasPromo && (
               <div className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-widest z-20">
                 -{reduction}%
@@ -65,7 +64,7 @@ export default async function ProductPage({ params }) {
               <img 
                 src={product.image_url} 
                 alt={product.model} 
-                className="max-h-full max-w-full object-contain transition-opacity duration-500"
+                className="max-h-full max-w-full object-contain mix-blend-multiply transition-opacity duration-500"
               />
             ) : (
               <div className="flex flex-col items-center gap-4 text-stone-200">
@@ -75,7 +74,6 @@ export default async function ProductPage({ params }) {
             )}
           </div>
 
-          {/* Tableau de caractéristiques techniques */}
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-white border border-stone-100 rounded-sm">
               <div className="flex items-center gap-2 text-stone-400 mb-1">
@@ -94,17 +92,15 @@ export default async function ProductPage({ params }) {
           </div>
         </div>
 
-        {/* COLONNE DROITE : ARGUMENTAIRE & PRIX */}
-<div className="flex flex-col justify-top pt-4">
-  {/* Marque : On augmente à 14px et font-extrabold */}
-  <p className="text-[14px] uppercase tracking-[0.3em] font-extrabold text-amber-800 mb-4">
-    {product.brand}
-  </p>
-  
-  {/* Modèle : Même logique d'humanisation pour les refs techniques */}
-  <h1 className="font-serif text-4xl md:text-6xl uppercase tracking-tighter text-stone-900 mb-8 leading-none italic">
-    {product.model.length < 12 ? `Machine ${product.model}` : product.model}
-  </h1>
+        {/* COLONNE DROITE : TEXTE & CONVERSION */}
+        <div className="flex flex-col justify-top pt-4">
+          <p className="text-[14px] uppercase tracking-[0.3em] font-extrabold text-amber-800 mb-4">
+            {product.brand}
+          </p>
+          
+          <h1 className="font-serif text-4xl md:text-6xl uppercase tracking-tighter text-stone-900 mb-8 leading-none italic">
+            {product.model.length < 12 ? `Machine ${product.model}` : product.model}
+          </h1>
           
           <div className="flex items-baseline gap-4 mb-10 border-b border-stone-200 pb-10">
             <p className="font-serif text-6xl text-red-600 leading-none">
@@ -119,14 +115,12 @@ export default async function ProductPage({ params }) {
 
           <div className="mb-12">
             <p className="text-stone-600 font-light text-xl leading-relaxed italic">
-              {product.description || `La machine ${product.brand} ${product.model} est une référence sélectionnée par nos experts pour sa fiabilité et sa qualité d'extraction thermique.`}
+              {product.description || `La machine ${product.brand} ${product.model} est une référence sélectionnée par nos experts pour sa fiabilité et sa qualité d'extraction.`}
             </p>
           </div>
 
-          {/* Bouton d'affiliation dynamique */}
           <AffiliateButton url={product.source_url} merchantName={merchantName} price={product.price_current} />
           
-          {/* Notes de bas de page réassurance */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-stone-400 italic text-[11px]">
              <span className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 opacity-50"/> Expédition sécurisée</span>
              <span className="flex items-center gap-2"><Coffee className="w-4 h-4 opacity-50"/> Stock vérifié par robot</span>
