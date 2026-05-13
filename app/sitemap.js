@@ -1,10 +1,10 @@
 import { supabase } from '../lib/supabase';
 
 export default async function sitemap() {
-  // L'URL de ton site (mise à jour avec muthos-empire.com)
+  // L'URL officielle de ton nouvel empire
   const baseUrl = 'https://www.ideescasa.fr';
 
-  // 1. Récupération dynamique des produits (Les machines)
+  // 1. Récupération dynamique des produits (Les machines espresso)
   let productRoutes = [];
   try {
     const { data: products } = await supabase
@@ -16,15 +16,15 @@ export default async function sitemap() {
       productRoutes = products.map((product) => ({
         url: `${baseUrl}/machines/${product.slug}`,
         lastModified: product.last_hunt_at ? new Date(product.last_hunt_at) : new Date(),
-        changeFrequency: 'daily',
-        priority: 0.9,
+        changeFrequency: 'weekly', // On passe en weekly car les prix ne bougent pas toutes les heures
+        priority: 0.8,
       }));
     }
   } catch (e) {
     console.error("Sitemap: Erreur récupération produits", e);
   }
 
-  // 2. Récupération dynamique des articles (Le blog/Lexique)
+  // 2. Récupération dynamique des articles (Le Lab Idées Casa)
   let articleRoutes = [];
   try {
     const { data: articles } = await supabase
@@ -36,21 +36,27 @@ export default async function sitemap() {
       articleRoutes = articles.map((article) => ({
         url: `${baseUrl}/article/${article.slug}`,
         lastModified: article.created_at ? new Date(article.created_at) : new Date(),
-        changeFrequency: 'weekly',
-        priority: 0.7,
+        changeFrequency: 'monthly',
+        priority: 0.6,
       }));
     }
   } catch (e) {
     console.error("Sitemap: Erreur récupération articles", e);
   }
 
-  // 3. Route statique (La page d'accueil)
+  // 3. Routes statiques (Accueil et Contact)
   const staticRoutes = [
     {
       url: baseUrl,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 1,
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.3,
     },
   ];
 
