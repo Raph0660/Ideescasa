@@ -3,15 +3,36 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        // Redirige toutes les anciennes pages de déco/maison vers la Home
-        // Ce "wildcard" capture tout ce qui n'est pas une de tes nouvelles routes
-        source: '/ancienne-categorie/:path*', 
+        // Capture toutes les URLs de catégories (deco, jardin, immo, etc.)
+        source: '/category/:path*',
         destination: '/',
         permanent: true,
       },
+      {
+        // Capture toutes les URLs d'archives par date (2025/02/...)
+        source: '/2025/:path*',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        // Capture tous les anciens fichiers .php
+        source: '/:slug*.php',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        // Capture le blog et les auteurs
+        source: '/blog/:path*',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/author/:path*',
+        destination: '/',
+        permanent: true,
+      }
     ];
   },
-  // Assure-toi que tes domaines d'images sont autorisés pour éviter les erreurs 400
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '**.boulanger.com' },
