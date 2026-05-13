@@ -12,9 +12,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata = {
-  title: 'MUTHOS | L\'Ingénierie de l\'Exception',
-  description: 'Sourcing indépendant et analyses techniques des systèmes d\'extraction espresso de précision. Décryptage thermodynamique des meilleures machines au monde.',
-  keywords: ['espresso', 'machine café grain', 'Lelit', 'Rocket Espresso', 'comparatif machine espresso'],
+  title: 'Idées Casa | - L'Art de l'Équipement Premium',
+  description: 'Expertise technique et comparateur des meilleurs équipements pour la maison. Spécialiste machines espresso haute performance.'],
   icons: {
     icon: '/favicon.ico',
   },
