@@ -24,7 +24,7 @@ export default async function HomePage() {
           L'Excellence <br/> au Meilleur Prix
         </h1>
         <p className="text-stone-500 max-w-xl mx-auto font-light italic text-lg leading-relaxed">
-          Nous scannons quotidiennement le marché pour vous trouver les meilleures machines espresso premium en promotion.
+          L'Équipement Premium <br/> au cœur de la Maison. L'art de vivre et les technologies d'extraction de précision. Nous scannons quotidiennement le marché pour vous trouver les meilleures machines espresso premium en promotion.
         </p>
       </section>
 
