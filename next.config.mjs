@@ -1,5 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: "img-src 'self' data: https://*.scene7.com https://*.boulanger.com https://*.unsplash.com https://m.media-amazon.com;",
+          },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       {
