@@ -3,8 +3,7 @@ import { notFound } from 'next/navigation';
 import AffiliateButton from '@/components/AffiliateButton';
 import { ArrowLeft, ShieldCheck, Gauge, Coffee, Zap } from 'lucide-react';
 import Link from 'next/link';
-// 1. IMPORTATION DU SERVICE D'IMAGES
-import { getImageProps } from '@/lib/imageService';
+import { getSafeImageUrl } from '@/lib/imageService';
 
 export const revalidate = 86400; // ISR 24h
 
@@ -15,7 +14,14 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const { data: product } = await supabase.from('products').select('*').eq('slug', slug).single();
+  // Récupérer le meilleur produit (par source_priority)
+  const { data: product } = await supabase
+    .from('products')
+    .select('*')
+    .eq('slug', slug)
+    .order('source_priority', { ascending: true })
+    .limit(1)
+    .single();
   
   if (!product) return { title: "Machine introuvable | Idées Casa" };
 
@@ -27,9 +33,19 @@ export async function generateMetadata({ params }) {
 
 export default async function ProductPage({ params }) {
   const { slug } = await params;
-  const { data: product } = await supabase.from('products').select('*').eq('slug', slug).single();
+  // Récupérer le meilleur produit (par source_priority)
+  const { data: product } = await supabase
+    .from('products')
+    .select('*')
+    .eq('slug', slug)
+    .order('source_priority', { ascending: true })
+    .limit(1)
+    .single();
 
   if (!product) notFound();
+
+  // Récupérer une image sécurisée avec fallback intelligent
+  const imageData = getSafeImageUrl(product);
 
   const hasPromo = product.price_catalog && product.price_catalog > product.price_current;
   const reduction = hasPromo ? Math.round(((product.price_catalog - product.price_current) / product.price_catalog) * 100) : 0;
@@ -51,20 +67,23 @@ export default async function ProductPage({ params }) {
 
       <div className="max-w-6xl mx-auto px-6 mt-12 grid grid-cols-1 lg:grid-cols-2 gap-16">
         
-        {/* COLONNE GAUCHE : VISUEL D'ORIGINE SÉCURISÉ */}
+        {/* COLONNE GAUCHE : VISUEL D'ORIGINE */}
         <div className="space-y-8">
-          <div className="bg-white border border-stone-200 p-12 aspect-square flex items-center justify-center relative shadow-sm">
+          <div className="bg-white border border-stone-200 p-12 aspect-square flex items-center justify-center relative shadow-sm overflow-hidden">
             {hasPromo && (
               <div className="absolute top-6 left-6 bg-red-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-widest z-10">
                 -{reduction}%
               </div>
             )}
-            
-            {/* 2. REMPLACEMENT DU BLOC IMAGE PAR LA LOGIQUE DE SÉCURITÉ */}
-            {product.image_url ? (
+            {imageData.url ? (
               <img 
-                {...getImageProps(product)} 
-                className="max-h-full object-contain mix-blend-multiply" 
+                src={imageData.url}
+                alt={imageData.alt}
+                className="max-h-full object-contain mix-blend-multiply"
+                onError={(e) => {
+                  // Fallback automatique si l'image primaire échoue
+                  e.currentTarget.src = imageData.fallbackUrl;
+                }}
               />
             ) : (
               <div className="text-stone-300 italic">Image en cours de traitement</div>
