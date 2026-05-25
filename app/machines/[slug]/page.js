@@ -4,6 +4,7 @@ import AffiliateButton from '@/components/AffiliateButton';
 import { ArrowLeft, ShieldCheck, Gauge, Coffee, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { getSafeImageUrl } from '@/lib/imageService';
+import SafeImage from '@/components/SafeImage';
 
 export const revalidate = 86400; // ISR 24h
 
@@ -67,7 +68,7 @@ export default async function ProductPage({ params }) {
 
       <div className="max-w-6xl mx-auto px-6 mt-12 grid grid-cols-1 lg:grid-cols-2 gap-16">
         
-        {/* COLONNE GAUCHE : VISUEL D'ORIGINE */}
+        {/* COLONNE GAUCHE : VISUEL D'ORIGINE SÉCURISÉ */}
         <div className="space-y-8">
           <div className="bg-white border border-stone-200 p-12 aspect-square flex items-center justify-center relative shadow-sm overflow-hidden">
             {hasPromo && (
@@ -75,15 +76,14 @@ export default async function ProductPage({ params }) {
                 -{reduction}%
               </div>
             )}
+            
+            {/* LE BLOC IMAGE CORRIGÉ ICI */}
             {imageData.url ? (
-              <img 
+              <SafeImage 
                 src={imageData.url}
                 alt={imageData.alt}
+                fallbackUrl={imageData.fallbackUrl}
                 className="max-h-full object-contain mix-blend-multiply"
-                onError={(e) => {
-                  // Fallback automatique si l'image primaire échoue
-                  e.currentTarget.src = imageData.fallbackUrl;
-                }}
               />
             ) : (
               <div className="text-stone-300 italic">Image en cours de traitement</div>
@@ -138,10 +138,4 @@ export default async function ProductPage({ params }) {
           
           <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-stone-400 italic text-[11px]">
              <span className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 opacity-50"/> Expédition sécurisée</span>
-             <span className="flex items-center gap-2"><Coffee className="w-4 h-4 opacity-50"/> Stock vérifié par robot</span>
-          </div>
-        </div>
-      </div>
-    </main>
-  );
-}
+             <span className="flex items-center gap-2"><Coffee className="w-4 h-4 opacity-50"/> Stock vérifié
