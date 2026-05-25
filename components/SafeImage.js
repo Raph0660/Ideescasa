@@ -1,12 +1,17 @@
-'use client'; // ◄ Spécifie à Next.js que ce bloc gère l'interactivité client
+'use client'; // Autorise l'interactivité côté client pour le onError
 
-import { getImageProps } from '@/lib/imageService';
-
-export default function SafeImage({ product, className }) {
+export default function SafeImage({ src, alt, fallbackUrl, className }) {
   return (
-    <img 
-      {...getImageProps(product)} 
-      className={className} 
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={(e) => {
+        if (fallbackUrl) {
+          // Si l'image principale casse, on injecte l'image de secours
+          e.currentTarget.src = fallbackUrl;
+        }
+      }}
     />
   );
 }
