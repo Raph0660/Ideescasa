@@ -20,14 +20,25 @@ export const metadata = {
 export const revalidate = 86400;
 
 export default async function HomePage() {
-  // Récupération des machines
+  // Récupération des machines avec meilleure source (source_priority ASC)
+  // On utilise DISTINCT ON pour ne garder qu'UN produit par slug
   const { data: latestProducts } = await supabase
     .from('products')
     .select('*')
     .eq('category', 'espresso-premium')
     .gt('price_current', 0)
+    .order('slug', { ascending: true })
+    .order('source_priority', { ascending: true })
     .order('last_hunt_at', { ascending: false })
-    .limit(12);
+    .limit(50); // Récupérer plus pour filtrer les doublons
+
+  // Filtrer les doublons (garder un seul par slug)
+  const seen = new Set();
+  const uniqueProducts = latestProducts?.filter(p => {
+    if (seen.has(p.slug)) return false;
+    seen.add(p.slug);
+    return true;
+  }).slice(0, 12) || [];
 
   return (
     <div className="bg-[#fdfbf7]">
@@ -51,12 +62,12 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16">
-          {latestProducts?.map((product) => (
+          {uniqueProducts?.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
         
-        {(!latestProducts || latestProducts.length === 0) && (
+        {(!uniqueProducts || uniqueProducts.length === 0) && (
            <div className="text-center py-20 text-stone-400 font-serif italic">
              Les offres sont en cours d'actualisation...
            </div>
