@@ -138,4 +138,10 @@ export default async function ProductPage({ params }) {
           
           <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-stone-400 italic text-[11px]">
              <span className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 opacity-50"/> Expédition sécurisée</span>
-             <span className="flex items-center gap-2"><Coffee className="w-4 h-4 opacity-50"/> Stock vérifié
+             <span className="flex items-center gap-2"><Coffee className="w-4 h-4 opacity-50"/> Stock vérifié par robot</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
