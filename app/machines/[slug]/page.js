@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import AffiliateButton from '@/components/AffiliateButton';
 import { ArrowLeft, ShieldCheck, Gauge, Coffee, Zap } from 'lucide-react';
 import Link from 'next/link';
+// 1. IMPORTATION DU SERVICE D'IMAGES
+import { getImageProps } from '@/lib/imageService';
 
 export const revalidate = 86400; // ISR 24h
 
@@ -49,7 +51,7 @@ export default async function ProductPage({ params }) {
 
       <div className="max-w-6xl mx-auto px-6 mt-12 grid grid-cols-1 lg:grid-cols-2 gap-16">
         
-        {/* COLONNE GAUCHE : VISUEL D'ORIGINE */}
+        {/* COLONNE GAUCHE : VISUEL D'ORIGINE SÉCURISÉ */}
         <div className="space-y-8">
           <div className="bg-white border border-stone-200 p-12 aspect-square flex items-center justify-center relative shadow-sm">
             {hasPromo && (
@@ -57,8 +59,13 @@ export default async function ProductPage({ params }) {
                 -{reduction}%
               </div>
             )}
+            
+            {/* 2. REMPLACEMENT DU BLOC IMAGE PAR LA LOGIQUE DE SÉCURITÉ */}
             {product.image_url ? (
-              <img src={product.image_url} alt={product.model} className="max-h-full object-contain mix-blend-multiply" />
+              <img 
+                {...getImageProps(product)} 
+                className="max-h-full object-contain mix-blend-multiply" 
+              />
             ) : (
               <div className="text-stone-300 italic">Image en cours de traitement</div>
             )}
