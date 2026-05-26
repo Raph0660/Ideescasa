@@ -7,7 +7,15 @@ const nextConfig = {
       { source: '/2025/:path*', destination: '/', permanent: true },
       { source: '/:slug*.php', destination: '/', permanent: true },
       { source: '/blog/:path*', destination: '/', permanent: true },
-      { source: '/author/:path*', destination: '/', permanent: true }
+      { source: '/author/:path*', destination: '/', permanent: true },
+
+      // ➔ LE FILET DE SÉCURITÉ GLOBAL (301)
+      // Redirige 100% des anciennes URLs inconnues vers la Home sans casser tes vraies pages actives
+      {
+        source: '/:path((?!machines|article|contact|mentions-legales|politique-confidentialite|sitemap|robots|_next|api|favicon).*)',
+        destination: '/',
+        permanent: true,
+      }
     ];
   },
 
