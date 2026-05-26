@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 1. Tes redirections SEO indispensables (Domaine expiré)
+  // 1. Redirections SEO indispensables (Ancien domaine expiré)
   async redirects() {
     return [
       { source: '/category/:path*', destination: '/', permanent: true },
@@ -9,17 +9,18 @@ const nextConfig = {
       { source: '/blog/:path*', destination: '/', permanent: true },
       { source: '/author/:path*', destination: '/', permanent: true },
 
-      // ➔ LE FILET DE SÉCURITÉ GLOBAL (301)
-      // Redirige 100% des anciennes URLs inconnues vers la Home sans casser tes vraies pages actives
+      // ➔ FILET DE SÉCURITÉ GLOBAL SÉCURISÉ & CORRIGÉ
+      // - Remplacement de ".*" par ".+" pour ignorer la Home (chemin vide) et briser la boucle de redirections.
+      // - Ajout de "comparatif" pour immuniser ton moteur pSEO de duels.
       {
-        source: '/:path((?!machines|article|contact|mentions-legales|politique-confidentialite|sitemap|robots|_next|api|favicon).*)',
+        source: '/:path((?!machines|article|comparatif|contact|mentions-legales|politique-confidentialite|sitemap|robots|_next|api|favicon).+)',
         destination: '/',
         permanent: true,
       }
     ];
   },
 
-  // 2. Tes autorisations d'images marchands
+  // 2. Autorisations d'images pour tes scrapers marchands & CDN
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '**.boulanger.com' },
@@ -31,7 +32,7 @@ const nextConfig = {
     ],
   },
 
-  // 3. AJOUT : Les en-têtes de sécurité de Claude (Validés pour Google)
+  // 3. En-têtes de sécurité statiques (Complétés par le nonce du middleware)
   async headers() {
     return [
       {
