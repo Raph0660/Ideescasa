@@ -1,27 +1,37 @@
 import { supabase } from '../lib/supabase';
 import ProductCard from '../components/ProductCard';
 
-export const metadata = {
-  title: "IdeesCasa | Curateur d'Excellence pour la Maison & Café de Spécialité",
-  description: "Héritier d'une passion pour l'art de vivre, IdeesCasa sélectionne pour vous le meilleur de l'équipement domestique et des machines espresso premium.",
-  alternates: {
-    canonical: 'https://www.ideescasa.fr',
-  },
-  openGraph: {
-    title: 'IdeesCasa - L’Excellence au Meilleur Prix',
-    description: 'Le comparateur premium pour sublimer votre intérieur.',
-    url: 'https://www.ideescasa.fr',
-    siteName: 'IdeesCasa',
-    locale: 'fr_FR',
-    type: 'website',
-  },
-};
+// TÂCHE 5 : GENRATE METADATA FUSIONNÉ (SEO + NOINDEX DYNAMIQUE)
+export async function generateMetadata({ searchParams }) {
+  const params = await searchParams;
+  const hasFilters = Object.keys(params).length > 0;
+
+  return {
+    title: "IdeesCasa | Curateur d'Excellence pour la Maison & Café de Spécialité",
+    description: "Héritier d'une passion pour l'art de vivre, IdeesCasa sélectionne pour vous le meilleur de l'équipement domestique et des machines espresso premium.",
+    alternates: {
+      canonical: 'https://www.ideescasa.fr',
+    },
+    openGraph: {
+      title: 'IdeesCasa - L’Excellence au Meilleur Prix',
+      description: 'Le comparateur premium pour sublimer votre intérieur.',
+      url: 'https://www.ideescasa.fr',
+      siteName: 'IdeesCasa',
+      locale: 'fr_FR',
+      type: 'website',
+    },
+    // Si l'URL a des filtres de tri (?sort=...), on masque à Google sans bloquer le jus de lien
+    robots: hasFilters 
+      ? { index: false, follow: true } 
+      : { index: true, follow: true },
+  };
+}
+
 // ISR : Revalidation toutes les 24h
 export const revalidate = 86400;
 
 export default async function HomePage() {
   // Récupération des machines avec meilleure source (source_priority ASC)
-  // On utilise DISTINCT ON pour ne garder qu'UN produit par slug
   const { data: latestProducts } = await supabase
     .from('products')
     .select('*')
@@ -30,7 +40,7 @@ export default async function HomePage() {
     .order('slug', { ascending: true })
     .order('source_priority', { ascending: true })
     .order('last_hunt_at', { ascending: false })
-    .limit(50); // Récupérer plus pour filtrer les doublons
+    .limit(50);
 
   // Filtrer les doublons (garder un seul par slug)
   const seen = new Set();
@@ -42,7 +52,7 @@ export default async function HomePage() {
 
   return (
     <div className="bg-[#fdfbf7]">
-{/* 1. HERO SECTION - Le Pont Sémantique */}
+      {/* 1. HERO SECTION - Le Pont Sémantique */}
       <section className="pt-32 pb-20 px-6 text-center border-b border-stone-200">
         <span className="text-[10px] uppercase tracking-[0.4em] mb-8 block opacity-50 font-bold text-stone-800">
           L'Héritage de l'Excellence Domestique — IdeesCasa
@@ -74,26 +84,26 @@ export default async function HomePage() {
         )}
       </section>
 
-{/* 3. BLOC CONFIANCE / E-E-A-T (Le Pont Sémantique) */}
-<section className="max-w-4xl mx-auto px-6 py-24 border-t border-stone-100">
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-left">
-    <div className="md:col-span-2">
-      <h2 className="font-serif text-3xl mb-6 text-[#1a1a1a]">L'Art de Vivre, de la Décoration au Rituel</h2>
-      <p className="text-stone-500 font-light leading-relaxed mb-6">
-        Depuis sa création, <strong>IdeesCasa</strong> a pour mission d'accompagner les Français dans l'embellissement de leur foyer. Mais une maison ne se résume pas à son esthétique ; elle se vit à travers ses rituels. 
-      </p>
-      <p className="text-stone-500 font-light leading-relaxed">
-        C'est pourquoi notre rédaction a choisi de se spécialiser dans l'élément central de la cuisine moderne : <strong>la machine espresso de spécialité</strong>. Nous appliquons la même exigence de design et de qualité que nous avions pour la décoration pour vous aider à choisir l'équipement qui transformera votre quotidien.
-      </p>
-    </div>
-    <div className="bg-stone-50 p-8 rounded-sm border border-stone-100">
-      <h4 className="font-serif text-lg mb-4 italic">Notre Indépendance</h4>
-      <p className="text-xs text-stone-400 leading-relaxed italic">
-        Nous ne recevons aucun produit gratuitement. Nos recommandations sont basées sur l'analyse croisée de données techniques, de retours d'utilisateurs et de la stabilité des prix du marché premium.
-      </p>
-    </div>
-  </div>
-</section>
+      {/* 3. BLOC CONFIANCE / E-E-A-T (Le Pont Sémantique) */}
+      <section className="max-w-4xl mx-auto px-6 py-24 border-t border-stone-100">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-left">
+          <div className="md:col-span-2">
+            <h2 className="font-serif text-3xl mb-6 text-[#1a1a1a]">L'Art de Vivre, de la Décoration au Rituel</h2>
+            <p className="text-stone-500 font-light leading-relaxed mb-6">
+              Depuis sa création, <strong>IdeesCasa</strong> a pour mission d'accompagner les Français dans l'embellissement de leur foyer. Mais une maison ne se résume pas à son esthétique ; elle se vit à travers ses rituels. 
+            </p>
+            <p className="text-stone-500 font-light leading-relaxed">
+              C'est why notre rédaction a choisi de se spécialiser dans l'élément central de la cuisine moderne : <strong>la machine espresso de spécialité</strong>. Nous appliquons la même exigence de design et de qualité que nous avions pour la décoration pour vous aider à choisir l'équipement qui transformera votre quotidien.
+            </p>
+          </div>
+          <div className="bg-stone-50 p-8 rounded-sm border border-stone-100">
+            <h4 className="font-serif text-lg mb-4 italic">Notre Indépendance</h4>
+            <p className="text-xs text-stone-400 leading-relaxed italic">
+              Nous ne recevons aucun produit gratuitement. Nos recommandations sont basées sur l'analyse croisée de données techniques, de retours d'utilisateurs et de la stabilité des prix du marché premium.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
