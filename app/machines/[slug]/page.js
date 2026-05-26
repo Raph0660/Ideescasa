@@ -1,10 +1,11 @@
 import { supabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import AffiliateButton from '@/components/AffiliateButton';
-import { ArrowLeft, ShieldCheck, Gauge, Coffee, Zap } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Gauge, Coffee, Zap, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { getSafeImageUrl } from '@/lib/imageService';
 import SafeImage from '@/components/SafeImage';
+import JsonLd from '@/components/JsonLd';
 
 export const revalidate = 86400; // ISR 24h
 
@@ -15,7 +16,6 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  // Récupérer le meilleur produit (par source_priority)
   const { data: product } = await supabase
     .from('products')
     .select('*')
@@ -26,15 +26,33 @@ export async function generateMetadata({ params }) {
   
   if (!product) return { title: "Machine introuvable | Idées Casa" };
 
+  const currentYear = new Date().getFullYear();
+  const title = `Avis ${product.brand} ${product.model} : Meilleur Prix ${currentYear}`;
+  const description = product.description || `Découvrez la fiche technique, notre analyse d'expert et le meilleur prix en direct pour la machine expresso ${product.brand} ${product.model}.`;
+
   return {
-    title: `${product.brand} ${product.model} : Prix et Analyse 2026`,
-    description: `Découvrez la fiche technique et le meilleur prix pour la ${product.brand} ${product.model}. Expertise indépendante Idées Casa.`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `https://www.ideescasa.fr/machines/${product.slug}`,
+      siteName: 'Idées Casa',
+      images: [{ url: product.image_url }],
+      locale: 'fr_FR',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [product.image_url],
+    },
   };
 }
 
 export default async function ProductPage({ params }) {
   const { slug } = await params;
-  // Récupérer le meilleur produit (par source_priority)
   const { data: product } = await supabase
     .from('products')
     .select('*')
@@ -45,9 +63,7 @@ export default async function ProductPage({ params }) {
 
   if (!product) notFound();
 
-  // Récupérer une image sécurisée avec fallback intelligent
   const imageData = getSafeImageUrl(product);
-
   const hasPromo = product.price_catalog && product.price_catalog > product.price_current;
   const reduction = hasPromo ? Math.round(((product.price_catalog - product.price_current) / product.price_catalog) * 100) : 0;
 
@@ -56,8 +72,13 @@ export default async function ProductPage({ params }) {
   if (product.source_url?.includes('coffee-webstore')) merchantName = "Coffee Webstore";
   if (product.source_url?.includes('maxicoffee')) merchantName = "MaxiCoffee";
 
+  const lastUpdate = product.last_hunt_at ? new Date(product.last_hunt_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
+
   return (
     <main className="min-h-screen bg-[#fdfbf7] pb-24">
+      {/* Injection sémantique du schéma structuré Google */}
+      <JsonLd product={product} />
+
       <nav className="py-6 px-6 border-b border-stone-200 sticky top-0 bg-[#fdfbf7]/90 backdrop-blur-sm z-50">
         <div className="max-w-6xl mx-auto text-left">
           <Link href="/" className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] font-bold text-stone-500 hover:text-stone-900 transition-colors">
@@ -77,7 +98,6 @@ export default async function ProductPage({ params }) {
               </div>
             )}
             
-            {/* LE BLOC IMAGE CORRIGÉ ICI */}
             {imageData.url ? (
               <SafeImage 
                 src={imageData.url}
@@ -96,7 +116,10 @@ export default async function ProductPage({ params }) {
                 <Gauge className="w-3 h-3"/> 
                 <span className="text-[9px] uppercase font-bold tracking-widest">Pression</span>
               </div>
-              <p className="font-serif text-lg">15 Bars</p>
+              {/* Fallback : utilise la vraie spec n8n si présente, sinon force 15 Bars */}
+              <p className="font-serif text-lg">
+                {product.specs?.pression_bars ? `${product.specs.pression_bars} Bars` : '15 Bars'}
+              </p>
             </div>
             <div className="p-4 bg-white border border-stone-100 rounded-sm">
               <div className="flex items-center gap-2 text-stone-400 mb-1">
@@ -113,9 +136,17 @@ export default async function ProductPage({ params }) {
           <p className="text-[14px] uppercase tracking-[0.3em] font-extrabold text-amber-800 mb-4">
             {product.brand}
           </p>
-          <h1 className="font-serif text-4xl md:text-6xl uppercase tracking-tighter text-stone-900 mb-8 leading-none italic">
+          <h1 className="font-serif text-4xl md:text-6xl uppercase tracking-tighter text-stone-900 mb-6 leading-none italic">
             {product.model.length < 12 ? `Machine ${product.model}` : product.model}
           </h1>
+
+          {/* Affichage E-E-A-T de la fraîcheur du prix */}
+          {lastUpdate && (
+            <div className="flex items-center gap-1.5 text-stone-400 text-[11px] mb-6 italic">
+              <Calendar className="w-3 h-3 text-stone-300" />
+              <time dateTime={product.last_hunt_at}>Tarif relevé le {lastUpdate}</time>
+            </div>
+          )}
           
           <div className="flex items-baseline gap-4 mb-10 border-b border-stone-200 pb-10">
             <p className="font-serif text-6xl text-red-600 leading-none">
