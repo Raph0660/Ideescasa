@@ -37,7 +37,7 @@ function buildComparisonInsights(pA, pB) {
     }
   }
 
-  // 4. Comparaison Puissance Électrique
+  // 4. Comparaison Puissance Électrique (Correction du pB minuscule ici)
   if (pA.specs?.puissance_watts && pB.specs?.puissance_watts) {
     if (pA.specs.puissance_watts !== pB.specs.puissance_watts) {
       const master = pA.specs.puissance_watts > pB.specs.puissance_watts ? pA : pB;
@@ -110,7 +110,7 @@ export default async function ComparisonPage({ params }) {
   const hasPromoB = productB.price_catalog && productB.price_catalog > productB.price_current;
   const reductionB = hasPromoB ? Math.round(((productB.price_catalog - productB.price_current) / productB.price_catalog) * 100) : 0;
 
-  // DOUBLE SCHÉMA JSON-LD (OFFER COMPATIBLE CSP DYNAMIQUE VIA NONCE)
+  // DOUBLE SCHÉMA JSON-LD CORRIGÉ ET STRIPÉ DE SES ERREURS DE STRUCTURE
   const nonce = headers().get('x-nonce') || '';
   const jsonLdData = [
     {
@@ -124,12 +124,13 @@ export default async function ComparisonPage({ params }) {
         "price": productA.price_current,
         "priceCurrency": "EUR",
         "availability": "https://schema.org/InStock",
-        "url": `https://www.ideescasa.fr/machines/${productA.slug}`
+        "url": `https://www.ideescasa.fr/machines/${productA.slug}`,
         "priceSpecification": {
           "@type": "PriceSpecification",
           "price": productA.price_catalog,
           "priceCurrency": "EUR",
           "valueAddedTaxIncluded": true
+        }
       }
     },
     {
@@ -143,7 +144,13 @@ export default async function ComparisonPage({ params }) {
         "price": productB.price_current,
         "priceCurrency": "EUR",
         "availability": "https://schema.org/InStock",
-        "url": `https://www.ideescasa.fr/machines/${productB.slug}`
+        "url": `https://www.ideescasa.fr/machines/${productB.slug}`,
+        "priceSpecification": {
+          "@type": "PriceSpecification",
+          "price": productB.price_catalog,
+          "priceCurrency": "EUR",
+          "valueAddedTaxIncluded": true
+        }
       }
     }
   ];
