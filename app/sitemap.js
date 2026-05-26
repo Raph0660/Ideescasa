@@ -44,13 +44,13 @@ export default async function sitemap() {
     console.error("Sitemap: Erreur récupération articles", e);
   }
 
-  // 3. Routes statiques (Accueil et Contact)
-  const staticRoutes = [
+  // 3. Routes statiques 
+ const staticRoutes = [
     {
       url: baseUrl,
       lastModified: new Date(),
       changeFrequency: 'daily',
-      priority: 1,
+      priority: 1.0,
     },
     {
       url: `${baseUrl}/contact`,
@@ -58,8 +58,19 @@ export default async function sitemap() {
       changeFrequency: 'monthly',
       priority: 0.3,
     },
+    {
+      url: `${baseUrl}/mentions-legales`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/politique-confidentialite`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.3,
+    },
   ];
 
-  // On assemble le tout pour Google
   return [...staticRoutes, ...productRoutes, ...articleRoutes];
 }
