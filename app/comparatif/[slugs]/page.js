@@ -125,6 +125,11 @@ export default async function ComparisonPage({ params }) {
         "priceCurrency": "EUR",
         "availability": "https://schema.org/InStock",
         "url": `https://www.ideescasa.fr/machines/${productA.slug}`
+        "priceSpecification": {
+          "@type": "PriceSpecification",
+          "price": productA.price_catalog,
+          "priceCurrency": "EUR",
+          "valueAddedTaxIncluded": true
       }
     },
     {
