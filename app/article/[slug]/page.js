@@ -1,6 +1,8 @@
 import Link from 'next/link';
-import { Clock, ArrowLeft } from 'lucide-react';
+import { Clock, ArrowLeft, Calendar } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { sanitizeHtml } from '@/lib/sanitizeHtml'; // ◄ AJOUTÉ
+import { headers } from 'next/headers'; // ◄ AJOUTÉ
 
 export const revalidate = 3600;
 
@@ -9,7 +11,7 @@ export async function generateMetadata({ params }) {
   const { slug } = await params;
   const { data: article } = await supabase
     .from('articles')
-    .select('theme')
+    .select('theme, meta_description') // ◄ AJOUTÉ meta_description
     .eq('slug', slug)
     .single();
 
@@ -17,7 +19,7 @@ export async function generateMetadata({ params }) {
 
   return {
     title: `${article.theme} | Expertise Idées Casa`,
-    description: `Analyse technique, tests et verdict indépendant de nos experts sur : ${article.theme}.`,
+    description: article.meta_description || `Analyse technique, tests et verdict indépendant de nos experts sur : ${article.theme}.`,
   };
 }
 
@@ -39,13 +41,34 @@ export default async function ArticlePage({ params }) {
     );
   }
 
-  // SÉCURITÉ : Nettoyage automatique des anciennes mentions "Muthos" dans le texte
-  const cleanContent = article.content.replaceAll(/Muthos/gi, 'Idées Casa');
+  // SÉCURITÉ & NETTOYAGE
+  const textWithNoMuthos = article.content.replaceAll(/Muthos/gi, 'Idées Casa');
+  const cleanContent = sanitizeHtml(textWithNoMuthos); // ◄ AJOUTÉ : Passage au sanitizer anti-bug
 
   const readTime = Math.max(1, Math.ceil(cleanContent.split(/\s+/).length / 200));
+  const publishDate = article.created_at ? new Date(article.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
+
+  // TÂCHE 9 : JSON-LD NEWSARTICLE AVEC NONCE DE SÉCURITÉ CSP
+  const nonce = headers().get('x-nonce') || '';
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "headline": article.theme,
+    "description": article.meta_description || `Expertise approfondie sur ${article.theme}`,
+    "datePublished": article.created_at,
+    "dateModified": article.updated_at || article.created_at,
+    "author": {
+      "@type": "Organization",
+      "name": "Idées Casa",
+      "url": "https://www.ideescasa.fr"
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[#fdfbf7] text-[#1c1917] pb-24 border-t-[12px] border-[#1c1917]">
+      {/* Script Googlebot Discover */}
+      <script type="application/ld+json" nonce={nonce} dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
       <nav className="py-6 px-6 border-b border-stone-200 sticky top-0 bg-[#fdfbf7]/90 backdrop-blur-sm z-50">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] font-bold text-stone-500 hover:text-stone-900 transition-colors">
@@ -67,13 +90,21 @@ export default async function ArticlePage({ params }) {
             </span>
           </div>
           
-          <h1 className="font-serif text-4xl md:text-6xl mb-12 leading-tight uppercase tracking-tight text-stone-900 italic">
+          <h1 className="font-serif text-4xl md:text-6xl mb-6 leading-tight uppercase tracking-tight text-stone-900 italic">
             {article.theme}
           </h1>
+
+          {publishDate && (
+            <div className="flex items-center justify-center gap-1 text-stone-400 text-xs mb-8 italic">
+              <Calendar className="w-3 h-3 text-stone-300" />
+              <span>Mis à jour le {publishDate}</span>
+            </div>
+          )}
+
           <div className="w-24 h-px bg-stone-300 mx-auto"></div>
         </header>
 
-        {/* RENDU HTML NETTOYÉ */}
+        {/* RENDU HISTORIQUE CONSERVÉ À 100% AVEC TES STYLES DE LETTRINE */}
         <div 
           className="font-light leading-relaxed text-[18px] md:text-[20px] text-stone-800 space-y-6
           [&>p:first-of-type::first-letter]:float-left [&>p:first-of-type::first-letter]:text-7xl 
