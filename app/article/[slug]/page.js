@@ -1,25 +1,25 @@
 import Link from 'next/link';
 import { Clock, ArrowLeft, Calendar } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { sanitizeHtml } from '@/lib/sanitizeHtml'; // ◄ AJOUTÉ
-import { headers } from 'next/headers'; // ◄ AJOUTÉ
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
+import { headers } from 'next/headers';
 
 export const revalidate = 3600;
 
-// 1. SEO DYNAMIQUE
+// 1. SEO DYNAMIQUE (Aligné sur la colonne title)
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const { data: article } = await supabase
     .from('articles')
-    .select('theme, meta_description') // ◄ AJOUTÉ meta_description
+    .select('title, meta_description') // ◄ CORRIGÉ
     .eq('slug', slug)
     .single();
 
   if (!article) return { title: "Analyse introuvable | Idées Casa" };
 
   return {
-    title: `${article.theme} | Expertise Idées Casa`,
-    description: article.meta_description || `Analyse technique, tests et verdict indépendant de nos experts sur : ${article.theme}.`,
+    title: `${article.title} | Expertise Idées Casa`, // ◄ CORRIGÉ
+    description: article.meta_description || `Analyse technique, tests et verdict indépendant de nos experts sur : ${article.title}.`, // ◄ CORRIGÉ
   };
 }
 
@@ -43,18 +43,18 @@ export default async function ArticlePage({ params }) {
 
   // SÉCURITÉ & NETTOYAGE
   const textWithNoMuthos = article.content.replaceAll(/Muthos/gi, 'Idées Casa');
-  const cleanContent = sanitizeHtml(textWithNoMuthos); // ◄ AJOUTÉ : Passage au sanitizer anti-bug
+  const cleanContent = sanitizeHtml(textWithNoMuthos);
 
   const readTime = Math.max(1, Math.ceil(cleanContent.split(/\s+/).length / 200));
   const publishDate = article.created_at ? new Date(article.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
 
-  // TÂCHE 9 : JSON-LD NEWSARTICLE AVEC NONCE DE SÉCURITÉ CSP
+  // TÂCHE 9 : JSON-LD NEWSARTICLE AVEC NONCE ET TITRE ALIGNÉ
   const nonce = headers().get('x-nonce') || '';
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
-    "headline": article.theme,
-    "description": article.meta_description || `Expertise approfondie sur ${article.theme}`,
+    "headline": article.title, // ◄ CORRIGÉ
+    "description": article.meta_description || `Expertise approfondie sur ${article.title}`, // ◄ CORRIGÉ
     "datePublished": article.created_at,
     "dateModified": article.updated_at || article.created_at,
     "author": {
@@ -91,7 +91,7 @@ export default async function ArticlePage({ params }) {
           </div>
           
           <h1 className="font-serif text-4xl md:text-6xl mb-6 leading-tight uppercase tracking-tight text-stone-900 italic">
-            {article.theme}
+            {article.title} {/* ◄ CORRIGÉ */}
           </h1>
 
           {publishDate && (
