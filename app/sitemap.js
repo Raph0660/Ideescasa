@@ -6,10 +6,10 @@ export default async function sitemap() {
   const baseUrl = 'https://www.ideescasa.fr';
 
   try {
-    // 1. Extraction des données produits nécessaires (Specs, Slugs et Marques)
+    // 1. Extraction des données produits nécessaires (Specs, Slugs, Marques et Catégories)
     const { data: products } = await supabase
       .from('best_products')
-      .select('slug, brand, updated_at, last_hunt_at')
+      .select('slug, brand, category, updated_at, last_hunt_at')
       .not('slug', 'is', null);
 
     // 2. Extraction des articles du Lab (Blog informatique)
@@ -59,7 +59,27 @@ export default async function sitemap() {
         });
       });
 
-      // C. MOTEUR pSEO : Combinaisons croisées du Comparateur (Duels)
+      // ◄ NOUVEAU ► C. GÉNÉRATION DYNAMIQUE DES PAGES GUIDES / CATÉGORIES (pSEO)
+      const rawCategories = products.map((p) => p.category).filter(Boolean);
+      const uniqueCategories = [...new Set(rawCategories.map((c) => c.toLowerCase()))];
+
+      uniqueCategories.forEach((catSlug) => {
+        const catProducts = products.filter((p) => p.category?.toLowerCase() === catSlug);
+        const latestUpdate = catProducts.reduce((acc, current) => {
+          const checkDate = current.updated_at || current.last_hunt_at;
+          const currentDate = checkDate ? new Date(checkDate) : new Date(0);
+          return currentDate > acc ? currentDate : acc;
+        }, new Date(0));
+
+        entries.push({
+          url: `${baseUrl}/guides/${catSlug}`,
+          lastModified: latestUpdate.getTime() === new Date(0).getTime() ? new Date().toISOString() : latestUpdate.toISOString(),
+          changeFrequency: 'daily',
+          priority: 0.7,
+        });
+      });
+
+      // D. MOTEUR pSEO : Combinaisons croisées du Comparateur (Duels)
       const sortedProducts = [...products].sort((a, b) => a.slug.localeCompare(b.slug));
       for (let i = 0; i < sortedProducts.length; i++) {
         for (let j = i + 1; j < sortedProducts.length; j++) {
@@ -80,7 +100,7 @@ export default async function sitemap() {
       }
     }
 
-    // D. GÉNÉRATION DES ARTICLES DU LAB (Le Blog)
+    // E. GÉNÉRATION DES ARTICLES DU LAB (Le Blog)
     if (articles && articles.length > 0) {
       articles.forEach((article) => {
         const dateRaw = article.reviewed_at || new Date();
