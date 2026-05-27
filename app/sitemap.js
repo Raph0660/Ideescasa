@@ -1,81 +1,94 @@
-import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase'; // ◄ Vérifie bien que le chemin vers ton client Supabase est exact
+
+export const dynamic = 'force-dynamic';
 
 export default async function sitemap() {
   const baseUrl = 'https://www.ideescasa.fr';
 
-  let uniqueProducts = [];
-  let productRoutes = [];
-  let brandRoutes = [];
-
-  // 1. Récupération dynamique des produits uniques (Vue best_products)
   try {
+    // 1. Récupération des machines pour les fiches produits et les duels comparatifs
     const { data: products } = await supabase
       .from('best_products')
-      .select('slug, last_hunt_at, updated_at, brand') // ◄ AJOUTÉ : updated_at pour traquer les changements de prix
-      .not('slug', 'is', null);
+      .select('slug, updated_at, last_hunt_at');
 
-    if (products) {
-      uniqueProducts = products; 
-      
-      // Génération des fiches produits individuelles
-      productRoutes = products.map((product) => {
-        // Priorité à la date de changement de prix, sinon date du dernier scrap
-        const exactDate = product.updated_at || product.last_hunt_at;
-        
-        return {
+    // 2. Récupération des articles du Lab (Blog)
+    const { data: articles } = await supabase
+      .from('articles')
+      .select('slug, reviewed_at');
+
+    // Initialisation du sitemap avec la racine
+    const entries = [
+      {
+        url: baseUrl,
+        lastModified: new Date().toISOString(),
+        changeFrequency: 'daily',
+        priority: 1.0,
+      },
+    ];
+
+    // Génération des URLs pour les fiches machines
+    if (products && products.length > 0) {
+      products.forEach((product) => {
+        const dateRaw = product.updated_at || product.last_hunt_at || new Date();
+        entries.push({
           url: `${baseUrl}/machines/${product.slug}`,
-          lastModified: exactDate ? new Date(exactDate).toISOString() : new Date().toISOString(), // ◄ Format ISO strict
+          lastModified: new Date(dateRaw).toISOString(),
           changeFrequency: 'weekly',
           priority: 0.8,
-        };
+        });
       });
 
-      // GÉNÉRATION DYNAMIQUE DES PAGES MARQUES (pSEO)
-      const rawBrands = products.map(p => p.brand).filter(Boolean);
-      const uniqueBrands = [...new Set(rawBrands.map(b => b.toLowerCase()))];
+      // MOTEUR pSEO : Génération croisée mathématique des duels de comparaison
+      for (let i = 0; i < products.length; i++) {
+        for (let j = i + 1; j < products.length; j++) {
+          const slugA = products[i].slug;
+          const slugB = products[j].slug;
 
-      brandRoutes = uniqueBrands.map((brandSlug) => {
-        const brandProducts = products.filter(p => p.brand?.toLowerCase() === brandSlug);
-        
-        const latestUpdate = brandProducts.reduce((acc, current) => {
-          const checkDate = current.updated_at || current.last_hunt_at;
-          const currentDate = checkDate ? new Date(checkDate) : new Date(0);
-          return currentDate > acc ? currentDate : acc;
-        }, new Date(0));
+          // Tri alphabétique strict (Règle canonique d'Idées Casa : 1 seule URL par paire)
+          const sortedSlugs = [slugA, slugB].sort();
+          const duelSlug = `${sortedSlugs[0]}-vs-${sortedSlugs[1]}`;
 
-        return {
-          url: `${baseUrl}/marques/${brandSlug}`,
-          lastModified: latestUpdate.getTime() === new Date(0).getTime() ? new Date().toISOString() : latestUpdate.toISOString(),
-          changeFrequency: 'daily',
-          priority: 0.7,
-        };
-      });
-    }
-  } catch (e) {
-    console.error("Sitemap: Erreur récupération produits et marques", e);
-  }
+          // Détermination du timestamp le plus frais entre les deux machines
+          const dateA = products[i].updated_at || products[i].last_hunt_at || new Date();
+          const dateB = products[j].updated_at || products[j].last_hunt_at || new Date();
+          const latestDate = new Date(dateA) > new Date(dateB) ? dateA : dateB;
 
-  // 2. GÉNÉRATION AUTOMATIQUE DES COMBINAISONS DU COMPARATEUR (pSEO)
-  let comparisonRoutes = [];
-  try {
-    if (uniqueProducts.length > 1) {
-      const sortedProducts = [...uniqueProducts].sort((a, b) => a.slug.localeCompare(b.slug));
-
-      for (let i = 0; i < sortedProducts.length; i++) {
-        for (let j = i + 1; j < sortedProducts.length; j++) {
-          const pA = sortedProducts[i];
-          const pB = sortedProducts[j];
-
-          const dateA = new Date(pA.updated_at || pA.last_hunt_at || Date.now());
-          const dateB = new Date(pB.updated_at || pB.last_hunt_at || Date.now());
-          const mostRecentDate = dateA > dateB ? dateA : dateB;
-
-          comparisonRoutes.push({
-            url: `${baseUrl}/comparatif/${pA.slug}-vs-${pB.slug}`,
-            lastModified: mostRecentDate.toISOString(),
-            changeFrequency: 'weekly',
-            priority: 0.6, 
+          entries.push({
+            url: `${baseUrl}/comparatif/${duelSlug}`,
+            lastModified: new Date(latestDate).toISOString(),
+            changeFrequency: 'monthly',
+            priority: 0.6,
           });
         }
       }
     }
+
+    // Génération des URLs pour les articles du Lab
+    if (articles && articles.length > 0) {
+      articles.forEach((article) => {
+        const dateRaw = article.reviewed_at || new Date();
+        entries.push({
+          url: `${baseUrl}/article/${article.slug}`,
+          lastModified: new Date(dateRaw).toISOString(),
+          changeFrequency: 'weekly',
+          priority: 0.7,
+        });
+      });
+    }
+
+    return entries;
+
+  } catch (error) {
+    console.error('Erreur critique lors de la génération du sitemap:', error);
+    
+    // FILET DE SÉCURITÉ : Renvoie au moins la Home si la DB ne répond pas au build
+    return [
+      {
+        url: baseUrl,
+        lastModified: new Date().toISOString(),
+        changeFrequency: 'daily',
+        priority: 1.0,
+      },
+    ];
+  }
+}
