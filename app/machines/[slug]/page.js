@@ -174,7 +174,7 @@ export default async function ProductPage({ params }) {
         </div>
       </div>
 
-      {/* ENRICHISSEMENT SÉMANTIQUE (ANTI-THIN CONTENT) */}
+      {/* ENRICHISSEMENT SÉMANTIQUE PAR FUSION TECH & IA */}
       <div className="max-w-6xl mx-auto px-6">
         {product.specs && (
           <section className="mt-16 border-t border-stone-200 pt-16 text-left">
@@ -182,17 +182,22 @@ export default async function ProductPage({ params }) {
               Analyse des Caractéristiques & Verdict
             </h3>
 
-            {/* 1. SECTION AVANTAGES / INCONVÉNIENTS CALCULÉS */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
               {/* Les Points Forts */}
               <div className="bg-emerald-50/50 border border-emerald-100 p-6 rounded-sm">
                 <h4 className="font-sans font-bold text-xs uppercase tracking-wider text-emerald-800 mb-4">Les Points Forts</h4>
                 <ul className="space-y-2 text-sm text-stone-600 font-light">
+                  {/* 1. Filtres mathématiques natifs d'origine */}
                   {product.specs.broyeur_integre && <li>✓ Broyeur de grains intégré : café d'une fraîcheur absolue à chaque tasse.</li>}
                   {product.specs.pression_bars >= 15 && <li>✓ Pression professionnelle ({product.specs.pression_bars} Bars) pour une extraction parfaite de la créma.</li>}
                   {product.specs.reservoir_eau_litres >= 1.8 && <li>✓ Excellent réservoir de {product.specs.reservoir_eau_litres}L : idéal pour une utilisation familiale ou quotidienne.</li>}
                   {product.specs.puissance_watts >= 1450 && <li>✓ Thermoblock haute performance ({product.specs.puissance_watts}W) : temps de préchauffage réduit au minimum.</li>}
                   {!product.specs.broyeur_integre && <li>✓ Format compact et entretien simplifié au quotidien (sans gestion de moulin).</li>}
+                  
+                  {/* 2. Injection fluide des avantages textuels extraits par Groq */}
+                  {Array.isArray(product.specs.pros) && product.specs.pros.map((pro, i) => (
+                    <li key={i}>✓ {pro}</li>
+                  ))}
                 </ul>
               </div>
 
@@ -200,10 +205,25 @@ export default async function ProductPage({ params }) {
               <div className="bg-red-50/50 border border-red-100 p-6 rounded-sm">
                 <h4 className="font-sans font-bold text-xs uppercase tracking-wider text-red-800 mb-4">Les Limites à prendre en compte</h4>
                 <ul className="space-y-2 text-sm text-stone-600 font-light">
+                  {/* 1. Filtres mathématiques natifs d'origine */}
                   {product.specs.reservoir_eau_litres < 1.3 && <li>✕ Réservoir d'eau compact ({product.specs.reservoir_eau_litres}L) demandant des remplissages fréquents.</li>}
                   {product.specs.capacite_grains_grammes <= 200 && product.specs.broyeur_integre && <li>✕ Contenance du bac à grains limitée ({product.specs.capacite_grains_grammes}g).</li>}
                   {product.price_current > 800 && <li>✕ Investissement premium justifié par les matériaux mais ciblant les utilisateurs avertis.</li>}
                   {product.specs.pression_bars < 15 && <li>✕ Pression standard de {product.specs.pression_bars} Bars, demandant une mouture parfaitement calibrée.</li>}
+                  
+                  {/* 2. Injection des faiblesses sémantiques de Groq (Désamorce les boîtes vides) */}
+                  {Array.isArray(product.specs.cons) && product.specs.cons.map((con, i) => (
+                    <li key={i}>✕ {con}</li>
+                  ))}
+
+                  {/* 3. FILET DE SECOURS ANTI-BOÎTE-VIDE (E-E-A-T) */}
+                  {(!product.specs.cons || product.specs.cons.length === 0) && 
+                   !(product.specs.reservoir_eau_litres < 1.3) && 
+                   !(product.specs.capacite_grains_grammes <= 200 && product.specs.broyeur_integre) && 
+                   !(product.price_current > 800) && 
+                   !(product.specs.pression_bars < 15) && (
+                    <li>✕ Seul le positionnement tarifaire initial peut restreindre l'accès aux profils débutants.</li>
+                  )}
                 </ul>
               </div>
             </div>
