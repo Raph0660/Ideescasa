@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation'; // ◄ MODIFIÉ
 import { ArrowLeft, Scale, Check, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import SafeImage from '@/components/SafeImage';
@@ -33,11 +33,11 @@ function buildComparisonInsights(pA, pB) {
     const diffGrains = Math.abs(pA.specs.capacite_grains_grammes - pB.specs.capacite_grains_grammes);
     if (diffGrains > 0) {
       const master = pA.specs.capacite_grains_grammes > pB.specs.capacite_grains_grammes ? pA : pB;
-      insights.push(`Le réservoir à grains de la ${master.brand} ${master.model} offre une meilleure capacité avec une réserve supérieure de ${diffGrains} grammes.`);
+      insights.push(`Le réservoir à grains de la ${master.brand} ${master.model} offers une meilleure capacité avec une réserve supérieure de ${diffGrains} grammes.`);
     }
   }
 
-  // 4. Comparaison Puissance Électrique (Correction du pB minuscule ici)
+  // 4. Comparaison Puissance Électrique
   if (pA.specs?.puissance_watts && pB.specs?.puissance_watts) {
     if (pA.specs.puissance_watts !== pB.specs.puissance_watts) {
       const master = pA.specs.puissance_watts > pB.specs.puissance_watts ? pA : pB;
@@ -87,10 +87,10 @@ export default async function ComparisonPage({ params }) {
 
   const [slugA, slugB] = slugs.split('-vs-');
 
-  // TÂCHE 7 : REDIRECTION INTERNE 301 POUR FORCER L'ORDRE ALPHABÉTIQUE (ANTI-DUPLICATE CONTENT)
+  // TÂCHE 7 : REDIRECTION INTERNE 301 CORRIGÉE POUR L'ORDRE ALPHABÉTIQUE
   const [canonicalA, canonicalB] = [slugA, slugB].sort();
   if (slugA !== canonicalA || slugB !== canonicalB) {
-    redirect(`/comparatif/${canonicalA}-vs-${canonicalB}`, 'permanent');
+    permanentRedirect(`/comparatif/${canonicalA}-vs-${canonicalB}`); // ◄ RECTIFIÉ AVEC L'API NATIVE 301
   }
 
   // Lecture de la vue SQL consolidée
@@ -110,7 +110,7 @@ export default async function ComparisonPage({ params }) {
   const hasPromoB = productB.price_catalog && productB.price_catalog > productB.price_current;
   const reductionB = hasPromoB ? Math.round(((productB.price_catalog - productB.price_current) / productB.price_catalog) * 100) : 0;
 
-  // DOUBLE SCHÉMA JSON-LD CORRIGÉ ET STRIPÉ DE SES ERREURS DE STRUCTURE
+  // DOUBLE SCHÉMA JSON-LD CORRIGÉ
   const nonce = headers().get('x-nonce') || '';
   const jsonLdData = [
     {
@@ -157,7 +157,6 @@ export default async function ComparisonPage({ params }) {
 
   return (
     <main className="min-h-screen bg-[#fdfbf7] pb-24 text-left">
-      {/* Injection des Schémas Structurés pour Googlebot */}
       <script type="application/ld+json" nonce={nonce} dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }} />
 
       <nav className="py-6 px-6 border-b border-stone-200 bg-[#fdfbf7]/90 backdrop-blur-sm sticky top-0 z-50">
@@ -180,7 +179,6 @@ export default async function ComparisonPage({ params }) {
 
         {/* GRILLE DUEL SIDE-BY-SIDE */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
-          
           {/* MACHINE A */}
           <div className="bg-white border border-stone-200 p-8 shadow-sm flex flex-col justify-between relative">
             {hasPromoA && (
@@ -192,8 +190,6 @@ export default async function ComparisonPage({ params }) {
               </div>
               <p className="text-xs uppercase tracking-widest text-amber-800 font-bold mb-1">{productA.brand}</p>
               <h2 className="font-serif text-2xl text-stone-900 mb-4 font-bold">{productA.model}</h2>
-              
-              {/* RÈGLE UI STRICTE DE CLAUDE POUR LES PRIX */}
               <div className="flex items-baseline gap-3 mb-6">
                 <p className="font-serif text-4xl font-bold text-red-600">
                   {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(productA.price_current)}
@@ -221,8 +217,6 @@ export default async function ComparisonPage({ params }) {
               </div>
               <p className="text-xs uppercase tracking-widest text-amber-800 font-bold mb-1">{productB.brand}</p>
               <h2 className="font-serif text-2xl text-stone-900 mb-4 font-bold">{productB.model}</h2>
-              
-              {/* RÈGLE UI STRICTE DE CLAUDE POUR LES PRIX */}
               <div className="flex items-baseline gap-3 mb-6">
                 <p className="font-serif text-4xl font-bold text-red-600">
                   {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(productB.price_current)}
@@ -238,10 +232,9 @@ export default async function ComparisonPage({ params }) {
               Fiche & Prix d'achat
             </Link>
           </div>
-
         </div>
 
-        {/* TÂCHE 8 : DENSITÉ SÉMANTIQUE AUTOMATIQUE (E-E-A-T) */}
+        {/* TÂCHE 8 : DENSITÉ SÉMANTIQUE AUTOMATIQUE */}
         {insights.length > 0 ? (
           <div className="bg-stone-50 border border-stone-200 p-8 md:p-12 mb-12 rounded-sm">
             <h3 className="font-serif text-2xl text-stone-900 mb-6 italic font-bold">L'Analyse Comparative de la Rédaction</h3>
