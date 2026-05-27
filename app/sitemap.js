@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase'; // ◄ Vérifie bien que le chemin vers ton client Supabase est exact
+import { supabase } from '../lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -6,17 +6,18 @@ export default async function sitemap() {
   const baseUrl = 'https://www.ideescasa.fr';
 
   try {
-    // 1. Récupération des machines pour les fiches produits et les duels comparatifs
+    // 1. Extraction des données produits nécessaires (Specs, Slugs et Marques)
     const { data: products } = await supabase
       .from('best_products')
-      .select('slug, updated_at, last_hunt_at');
+      .select('slug, brand, updated_at, last_hunt_at')
+      .not('slug', 'is', null);
 
-    // 2. Récupération des articles du Lab (Blog)
+    // 2. Extraction des articles du Lab (Blog informatique)
     const { data: articles } = await supabase
       .from('articles')
       .select('slug, reviewed_at');
 
-    // Initialisation du sitemap avec la racine
+    // Initialisation avec la page d'accueil
     const entries = [
       {
         url: baseUrl,
@@ -26,8 +27,8 @@ export default async function sitemap() {
       },
     ];
 
-    // Génération des URLs pour les fiches machines
     if (products && products.length > 0) {
+      // A. GÉNÉRATION DES FICHES PRODUITS
       products.forEach((product) => {
         const dateRaw = product.updated_at || product.last_hunt_at || new Date();
         entries.push({
@@ -38,32 +39,48 @@ export default async function sitemap() {
         });
       });
 
-      // MOTEUR pSEO : Génération croisée mathématique des duels de comparaison
-      for (let i = 0; i < products.length; i++) {
-        for (let j = i + 1; j < products.length; j++) {
-          const slugA = products[i].slug;
-          const slugB = products[j].slug;
+      // B. GÉNÉRATION DYNAMIQUE DES PAGES MARQUES (pSEO)
+      const rawBrands = products.map((p) => p.brand).filter(Boolean);
+      const uniqueBrands = [...new Set(rawBrands.map((b) => b.toLowerCase()))];
 
-          // Tri alphabétique strict (Règle canonique d'Idées Casa : 1 seule URL par paire)
-          const sortedSlugs = [slugA, slugB].sort();
-          const duelSlug = `${sortedSlugs[0]}-vs-${sortedSlugs[1]}`;
+      uniqueBrands.forEach((brandSlug) => {
+        const brandProducts = products.filter((p) => p.brand?.toLowerCase() === brandSlug);
+        const latestUpdate = brandProducts.reduce((acc, current) => {
+          const checkDate = current.updated_at || current.last_hunt_at;
+          const currentDate = checkDate ? new Date(checkDate) : new Date(0);
+          return currentDate > acc ? currentDate : acc;
+        }, new Date(0));
 
-          // Détermination du timestamp le plus frais entre les deux machines
-          const dateA = products[i].updated_at || products[i].last_hunt_at || new Date();
-          const dateB = products[j].updated_at || products[j].last_hunt_at || new Date();
-          const latestDate = new Date(dateA) > new Date(dateB) ? dateA : dateB;
+        entries.push({
+          url: `${baseUrl}/marques/${brandSlug}`,
+          lastModified: latestUpdate.getTime() === new Date(0).getTime() ? new Date().toISOString() : latestUpdate.toISOString(),
+          changeFrequency: 'daily',
+          priority: 0.7,
+        });
+      });
+
+      // C. MOTEUR pSEO : Combinaisons croisées du Comparateur (Duels)
+      const sortedProducts = [...products].sort((a, b) => a.slug.localeCompare(b.slug));
+      for (let i = 0; i < sortedProducts.length; i++) {
+        for (let j = i + 1; j < sortedProducts.length; j++) {
+          const pA = sortedProducts[i];
+          const pB = sortedProducts[j];
+
+          const dateA = pA.updated_at || pA.last_hunt_at || new Date();
+          const dateB = pB.updated_at || pB.last_hunt_at || new Date();
+          const mostRecentDate = new Date(dateA) > new Date(dateB) ? dateA : dateB;
 
           entries.push({
-            url: `${baseUrl}/comparatif/${duelSlug}`,
-            lastModified: new Date(latestDate).toISOString(),
-            changeFrequency: 'monthly',
+            url: `${baseUrl}/comparatif/${pA.slug}-vs-${pB.slug}`,
+            lastModified: new Date(mostRecentDate).toISOString(),
+            changeFrequency: 'weekly',
             priority: 0.6,
           });
         }
       }
     }
 
-    // Génération des URLs pour les articles du Lab
+    // D. GÉNÉRATION DES ARTICLES DU LAB (Le Blog)
     if (articles && articles.length > 0) {
       articles.forEach((article) => {
         const dateRaw = article.reviewed_at || new Date();
@@ -79,9 +96,7 @@ export default async function sitemap() {
     return entries;
 
   } catch (error) {
-    console.error('Erreur critique lors de la génération du sitemap:', error);
-    
-    // FILET DE SÉCURITÉ : Renvoie au moins la Home si la DB ne répond pas au build
+    console.error('Erreur lors de la compilation du sitemap unifié:', error);
     return [
       {
         url: baseUrl,
