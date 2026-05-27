@@ -87,6 +87,7 @@ export default async function ProductPage({ params }) {
         </div>
       </nav>
 
+      {/* BLOC PRINCIPAL PRODUIT */}
       <div className="max-w-6xl mx-auto px-6 mt-12 grid grid-cols-1 lg:grid-cols-2 gap-16">
         
         {/* COLONNE GAUCHE : VISUEL D'ORIGINE SÉCURISÉ */}
@@ -116,7 +117,6 @@ export default async function ProductPage({ params }) {
                 <Gauge className="w-3 h-3"/> 
                 <span className="text-[9px] uppercase font-bold tracking-widest">Pression</span>
               </div>
-              {/* Fallback : utilise la vraie spec n8n si présente, sinon force 15 Bars */}
               <p className="font-serif text-lg">
                 {product.specs?.pression_bars ? `${product.specs.pression_bars} Bars` : '15 Bars'}
               </p>
@@ -172,6 +172,93 @@ export default async function ProductPage({ params }) {
              <span className="flex items-center gap-2"><Coffee className="w-4 h-4 opacity-50"/> Stock vérifié par robot</span>
           </div>
         </div>
+      </div>
+
+      {/* ENRICHISSEMENT SÉMANTIQUE (ANTI-THIN CONTENT) */}
+      <div className="max-w-6xl mx-auto px-6">
+        {product.specs && (
+          <section className="mt-16 border-t border-stone-200 pt-16 text-left">
+            <h3 className="font-serif text-3xl text-stone-900 mb-8 italic font-bold">
+              Analyse des Caractéristiques & Verdict
+            </h3>
+
+            {/* 1. SECTION AVANTAGES / INCONVÉNIENTS CALCULÉS */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+              {/* Les Points Forts */}
+              <div className="bg-emerald-50/50 border border-emerald-100 p-6 rounded-sm">
+                <h4 className="font-sans font-bold text-xs uppercase tracking-wider text-emerald-800 mb-4">Les Points Forts</h4>
+                <ul className="space-y-2 text-sm text-stone-600 font-light">
+                  {product.specs.broyeur_integre && <li>✓ Broyeur de grains intégré : café d'une fraîcheur absolue à chaque tasse.</li>}
+                  {product.specs.pression_bars >= 15 && <li>✓ Pression professionnelle ({product.specs.pression_bars} Bars) pour une extraction parfaite de la créma.</li>}
+                  {product.specs.reservoir_eau_litres >= 1.8 && <li>✓ Excellent réservoir de {product.specs.reservoir_eau_litres}L : idéal pour une utilisation familiale ou quotidienne.</li>}
+                  {product.specs.puissance_watts >= 1450 && <li>✓ Thermoblock haute performance ({product.specs.puissance_watts}W) : temps de préchauffage réduit au minimum.</li>}
+                  {!product.specs.broyeur_integre && <li>✓ Format compact et entretien simplifié au quotidien (sans gestion de moulin).</li>}
+                </ul>
+              </div>
+
+              {/* Les Limites */}
+              <div className="bg-red-50/50 border border-red-100 p-6 rounded-sm">
+                <h4 className="font-sans font-bold text-xs uppercase tracking-wider text-red-800 mb-4">Les Limites à prendre en compte</h4>
+                <ul className="space-y-2 text-sm text-stone-600 font-light">
+                  {product.specs.reservoir_eau_litres < 1.3 && <li>✕ Réservoir d'eau compact ({product.specs.reservoir_eau_litres}L) demandant des remplissages fréquents.</li>}
+                  {product.specs.capacite_grains_grammes <= 200 && product.specs.broyeur_integre && <li>✕ Contenance du bac à grains limitée ({product.specs.capacite_grains_grammes}g).</li>}
+                  {product.price_current > 800 && <li>✕ Investissement premium justifié par les matériaux mais ciblant les utilisateurs avertis.</li>}
+                  {product.specs.pression_bars < 15 && <li>✕ Pression standard de {product.specs.pression_bars} Bars, demandant une mouture parfaitement calibrée.</li>}
+                </ul>
+              </div>
+            </div>
+
+            {/* 2. TABLEAU TECHNIQUE COMPLET */}
+            <div className="bg-white border border-stone-200 overflow-hidden shadow-sm">
+              <table className="w-full text-sm font-light text-stone-600">
+                <thead>
+                  <tr className="bg-stone-50 border-b border-stone-200 text-left font-bold text-stone-700 text-xs uppercase tracking-wider">
+                    <th className="p-4">Indicateur Technique</th>
+                    <th className="p-4">Spécification Nominale</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {product.specs.reservoir_eau_litres && (
+                    <tr>
+                      <td className="p-4 font-medium text-stone-900 bg-stone-50/30 w-1/2">Capacité du réservoir</td>
+                      <td className="p-4">{product.specs.reservoir_eau_litres} Litres</td>
+                    </tr>
+                  )}
+                  {product.specs.pression_bars && (
+                    <tr>
+                      <td className="p-4 font-medium text-stone-900 bg-stone-50/30">Pression de la pompe</td>
+                      <td className="p-4">{product.specs.pression_bars} Bars</td>
+                    </tr>
+                  )}
+                  {product.specs.puissance_watts && (
+                    <tr>
+                      <td className="p-4 font-medium text-stone-900 bg-stone-50/30">Puissance nominale</td>
+                      <td className="p-4">{product.specs.puissance_watts} Watts</td>
+                    </tr>
+                  )}
+                  {product.specs.broyeur_integre !== undefined && (
+                    <tr>
+                      <td className="p-4 font-medium text-stone-900 bg-stone-50/30">Broyeur à grains intégré</td>
+                      <td className="p-4">{product.specs.broyeur_integre ? "Oui (Moulin intégré)" : "Non"}</td>
+                    </tr>
+                  )}
+                  {product.specs.capacite_grains_grammes && (
+                    <tr>
+                      <td className="p-4 font-medium text-stone-900 bg-stone-50/30">Capacité du bac à grains</td>
+                      <td className="p-4">{product.specs.capacite_grains_grammes} grammes</td>
+                    </tr>
+                  )}
+                  {product.specs.type_chauffe && (
+                    <tr>
+                      <td className="p-4 font-medium text-stone-900 bg-stone-50/30">Système de chauffe</td>
+                      <td className="p-4">{product.specs.type_chauffe}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
       </div>
     </main>
   );
