@@ -16,8 +16,9 @@ export default function robots() {
         ],
       },
       {
-        // On bloque les robots d'IA pour préserver ton serveur et tes contenus
+        // On bloque le crawl global mais on autorise explicitement le point d'ancrage IA
         userAgent: ['GPTBot', 'CCBot', 'Google-Extended', 'Anthropic-AI'],
+        allow: '/llms.txt',
         disallow: '/',
       }
     ],
