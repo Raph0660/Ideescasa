@@ -33,7 +33,7 @@ function buildComparisonInsights(pA, pB) {
     const diffGrains = Math.abs(pA.specs.capacite_grains_grammes - pB.specs.capacite_grains_grammes);
     if (diffGrains > 0) {
       const master = pA.specs.capacite_grains_grammes > pB.specs.capacite_grains_grammes ? pA : pB;
-      insights.push(`Le réservoir à grains de la ${master.brand} ${master.model} offers une meilleure capacité avec une réserve supérieure de ${diffGrains} grammes.`);
+      insights.push(`Le réservoir à grains de la ${master.brand} ${master.model} offre une meilleure capacité avec une réserve supérieure de ${diffGrains} grammes.`);
     }
   }
 
