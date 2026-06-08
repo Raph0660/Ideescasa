@@ -93,7 +93,7 @@ export default async function HomePage() {
               Depuis sa création, <strong>IdeesCasa</strong> a pour mission d'accompagner les Français dans l'embellissement de leur foyer. Mais une maison ne se résume pas à son esthétique ; elle se vit à travers ses rituels. 
             </p>
             <p className="text-stone-500 font-light leading-relaxed">
-              C'est why notre rédaction a choisi de se spécialiser dans l'élément central de la cuisine moderne : <strong>la machine espresso de spécialité</strong>. Nous appliquons la même exigence de design et de qualité que nous avions pour la décoration pour vous aider à choisir l'équipement qui transformera votre quotidien.
+              C'est pourquoi notre rédaction a choisi de se spécialiser dans l'élément central de la cuisine moderne : <strong>la machine espresso de spécialité</strong>. Nous appliquons la même exigence de design et de qualité que nous avions pour la décoration pour vous aider à choisir l'équipement qui transformera votre quotidien.
             </p>
           </div>
           <div className="bg-stone-50 p-8 rounded-sm border border-stone-100">
