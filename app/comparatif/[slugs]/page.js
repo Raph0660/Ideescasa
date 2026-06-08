@@ -174,4 +174,88 @@ export default async function ComparisonPage({ params }) {
             <Scale className="w-3 h-3" /> Analyse Technique Face à Face
           </span>
           <h1 className="font-serif text-4xl md:text-5xl tracking-tight text-stone-900 leading-tight mb-4 italic">
-            {productA.brand} <span className="uppercase
+            {productA.brand} <span className="uppercase not-italic font-sans font-bold text-stone-400 text-2xl">{productA.model}</span> <br className="md:hidden" /> vs <br className="md:hidden" /> {productB.brand} <span className="uppercase not-italic font-sans font-bold text-stone-400 text-2xl">{productB.model}</span>
+          </h1>
+        </div>
+
+        {/* GRILLE DUEL SIDE-BY-SIDE */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+          {/* MACHINE A */}
+          <div className="bg-white border border-stone-200 p-8 shadow-sm flex flex-col justify-between relative">
+            {/* FIX CLAUDE : Affichage propre de la réduction sans template literal cassé */}
+            {hasPromoA && (
+              <span className="absolute top-4 left-4 bg-red-600 text-white font-sans font-bold text-[9px] px-2 py-0.5 uppercase tracking-widest z-10">-{reductionA}%</span>
+            )}
+            <div>
+              <div className="aspect-square flex items-center justify-center p-6 bg-stone-50 mb-6 overflow-hidden">
+                <SafeImage src={productA.image_url} alt={`${productA.brand} ${productA.model}`} className="max-h-64 object-contain mix-blend-multiply" />
+              </div>
+              <p className="text-xs uppercase tracking-widest text-amber-800 font-bold mb-1">{productA.brand}</p>
+              <h2 className="font-serif text-2xl text-stone-900 mb-4 font-bold">{productA.model}</h2>
+              <div className="flex items-baseline gap-3 mb-6">
+                <p className="font-serif text-4xl font-bold text-red-600">
+                  {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(productA.price_current)}
+                </p>
+                {hasPromoA && (
+                  <p className="text-lg text-stone-300 line-through">
+                    {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(productA.price_catalog)}
+                  </p>
+                )}
+              </div>
+            </div>
+            <Link href={`/machines/${productA.slug}`} className="block text-center bg-[#1a1a1a] text-white py-3 uppercase tracking-widest text-xs font-bold hover:bg-stone-800 transition-colors">
+              Fiche & Prix d'achat
+            </Link>
+          </div>
+
+          {/* MACHINE B */}
+          <div className="bg-white border border-stone-200 p-8 shadow-sm flex flex-col justify-between relative">
+            {/* FIX CLAUDE : Affichage propre de la réduction sans template literal cassé */}
+            {hasPromoB && (
+              <span className="absolute top-4 left-4 bg-red-600 text-white font-sans font-bold text-[9px] px-2 py-0.5 uppercase tracking-widest z-10">-{reductionB}%</span>
+            )}
+            <div>
+              <div className="aspect-square flex items-center justify-center p-6 bg-stone-50 mb-6 overflow-hidden">
+                <SafeImage src={productB.image_url} alt={`${productB.brand} ${productB.model}`} className="max-h-64 object-contain mix-blend-multiply" />
+              </div>
+              <p className="text-xs uppercase tracking-widest text-amber-800 font-bold mb-1">{productB.brand}</p>
+              <h2 className="font-serif text-2xl text-stone-900 mb-4 font-bold">{productB.model}</h2>
+              <div className="flex items-baseline gap-3 mb-6">
+                <p className="font-serif text-4xl font-bold text-red-600">
+                  {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(productB.price_current)}
+                </p>
+                {hasPromoB && (
+                  <p className="text-lg text-stone-300 line-through">
+                    {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(productB.price_catalog)}
+                  </p>
+                )}
+              </div>
+            </div>
+            <Link href={`/machines/${productB.slug}`} className="block text-center bg-[#1a1a1a] text-white py-3 uppercase tracking-widest text-xs font-bold hover:bg-stone-800 transition-colors">
+              Fiche & Prix d'achat
+            </Link>
+          </div>
+        </div>
+
+        {/* TÂCHE 8 : DENSITÉ SÉMANTIQUE AUTOMATIQUE */}
+        {insights.length > 0 ? (
+          <div className="bg-stone-50 border border-stone-200 p-8 md:p-12 mb-12 rounded-sm">
+            <h3 className="font-serif text-2xl text-stone-900 mb-6 italic font-bold">L'Analyse Comparative de la Rédaction</h3>
+            <ul className="space-y-4">
+              {insights.map((insight, index) => (
+                <li key={index} className="flex items-start gap-3 text-stone-600 leading-relaxed font-light text-base">
+                  <Check className="w-5 h-5 text-amber-800 shrink-0 mt-0.5" />
+                  <span>{insight}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <div className="bg-stone-50 border border-stone-100 p-6 text-center text-stone-400 italic text-xs flex items-center justify-center gap-2">
+            <AlertCircle className="w-4 h-4 opacity-40" /> Les fiches techniques détaillées de ces deux modèles coïncident. Consultez les rapports individuels pour affiner votre choix.
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
