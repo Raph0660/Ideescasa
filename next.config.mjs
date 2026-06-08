@@ -13,7 +13,8 @@ const nextConfig = {
       // - Remplacement de ".*" par ".+" pour ignorer la Home (chemin vide) et briser la boucle de redirections.
       // - Ajout de "comparatif" pour immuniser ton moteur pSEO de duels.
       {
-        source: '/:path((?!machines|article|comparatif|contact|mentions-legales|politique-confidentialite|sitemap|robots|_next|api|favicon).+)',
+        // REMPLACE LA LIGNE SOURCE EXISTANTE PAR CELLE-CI :
+source: '/:path((?!machines|article|comparatif|marques|guides|espresso-premium|contact|mentions-legales|politique-confidentialite|sitemap|robots|_next|api|favicon).+)',
         destination: '/',
         permanent: true,
       }
