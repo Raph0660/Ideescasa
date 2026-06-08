@@ -209,7 +209,7 @@ export default async function ProductPage({ params }) {
                 <h4 className="font-sans font-bold text-xs uppercase tracking-wider text-red-800 mb-4">Les Limites à prendre en compte</h4>
                 <ul className="space-y-2 text-sm text-stone-600 font-light">
                   {product.specs.reservoir_eau_litres < 1.3 && <li>✕ Réservoir d'eau compact ({product.specs.reservoir_eau_litres}L) demandant des remplissages fréquents.</li>}
-                  {product.specs.capacite_grains_grammes <= 200 && product.specs.broyeur_integre && <li>✕ Contenance du bac à grains limitée ({product.specs.capacite_grains_grammes}g).</li>}
+                  {product.specs?.capacite_grains_grammes <= 200 && product.specs.broyeur_integre && <li>✕ Contenance du bac à grains limitée ({product.specs?.capacite_grains_grammes}g).</li>}
                   {product.price_current > 800 && <li>✕ Investissement premium justifié par les matériaux mais ciblant les utilisateurs avertis.</li>}
                   {product.specs.pression_bars < 15 && <li>✕ Pression standard de {product.specs.pression_bars} Bars, demandant une mouture parfaitement calibrée.</li>}
                   
