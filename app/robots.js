@@ -16,8 +16,8 @@ export default function robots() {
         ],
       },
       {
-        // On bloque le crawl global mais on autorise explicitement le point d'ancrage IA
-        userAgent: ['GPTBot', 'CCBot', 'Google-Extended', 'Anthropic-AI'],
+        // On maintient le blocage strict sur les scrapers IA tiers, mais sans Google-Extended
+        userAgent: ['GPTBot', 'CCBot', 'Anthropic-AI'], 
         allow: '/llms.txt',
         disallow: '/',
       }
