@@ -57,7 +57,7 @@ export default function RootLayout({ children }) {
                 <ul className="space-y-2 text-sm font-light text-stone-400">
                   <li>© 2026 IdeesCasa – Rédaction & Expertise Cuisine par l'équipe IdeesCasa.</li>
                   <li className="text-[11px] leading-snug">
-                    Transparence : Nos recommandations peuvent include des liens d'affiliation. Cela n'influence jamais nos analyses techniques.
+                    Transparence : Nos recommandations peuvent inclure des liens d'affiliation. Cela n'influence jamais nos analyses techniques.
                   </li>
                 </ul>
               </div>
