@@ -3,9 +3,11 @@ import { headers } from 'next/headers';
 export default function JsonLd({ product }) {
   const headersList = headers();
   const nonce = headersList.get('x-nonce') || '';
+  
   const huntDate = product.last_hunt_at ? new Date(product.last_hunt_at) : new Date();
   const validUntil = new Date(huntDate.getTime() + 30 * 24 * 60 * 60 * 1000)
-    .toISOString().split('T')[0];
+    .toISOString()
+    .split('T')[0];
 
   const jsonSchema = {
     "@context": "https://schema.org",
@@ -17,7 +19,7 @@ export default function JsonLd({ product }) {
       "@type": "Brand",
       "name": product.brand
     },
-    // Injection dynamique des étoiles dans les SERPs Google si disponibles en base
+    // FIX CLAUDE : Débloque l'affichage des étoiles jaunes sur Google
     ...(product.rating_avg && product.review_count > 0 && {
       "aggregateRating": {
         "@type": "AggregateRating",
