@@ -43,11 +43,11 @@ export default async function CategoryPage({ params }) {
               </span>
               <h2 className="text-xl font-bold mt-2 mb-4">{product.model}</h2>
               
-              {/* Affichage dynamique des specs clés */}
+              {/* FIX CLAUDE : Affichage dynamique des specs sécurisé avec l'optional chaining ?. */}
               <ul className="text-sm text-gray-600 space-y-1 mb-6">
-                {product.specs.pression_bars && <li>⚡ Pression : {product.specs.pression_bars} bars</li>}
-                {product.specs.reservoir_eau_litres && <li>💧 Réservoir : {product.specs.reservoir_eau_litres} L</li>}
-                {product.specs.broyeur_integre && <li>🌾 Broyeur de grains : Oui</li>}
+                {product.specs?.pression_bars && <li>⚡ Pression : {product.specs.pression_bars} bars</li>}
+                {product.specs?.reservoir_eau_litres && <li>💧 Réservoir : {product.specs.reservoir_eau_litres} L</li>}
+                {product.specs?.broyeur_integre && <li>🌾 Broyeur de grains : Oui</li>}
               </ul>
             </div>
 
