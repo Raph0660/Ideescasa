@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase';
+import Link from 'next/link'; // ◄ FIX CLAUDE : Import indispensable pour le routage interne
 
 export const revalidate = 21600;
 
@@ -36,7 +37,8 @@ export default async function EspressoPremiumPage() {
               {brandProducts.map((product) => {
                 const hasPromo = product.price_catalog > product.price_current;
                 return (
-                  <a key={product.id} href={product.source_url} target="_blank" rel="noopener noreferrer" className="group">
+                  // ◄ FIX CLAUDE : Redirection interne vers ta fiche technique pour conserver le PageRank
+                  <Link key={product.id} href={`/machines/${product.slug}`} className="group">
                     <div className="aspect-square bg-white border border-stone-100 mb-6 flex items-center justify-center p-10 overflow-hidden relative transition-all duration-500 group-hover:shadow-xl">
                       {hasPromo && <div className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-bold px-2 py-1 uppercase">Offre</div>}
                       <img src={product.image_url} alt={product.model} className="w-full h-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-110" />
@@ -46,7 +48,7 @@ export default async function EspressoPremiumPage() {
                        <p className="text-xl font-serif text-red-600">{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(product.price_current)}</p>
                        {hasPromo && <p className="text-sm text-stone-400 line-through">{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(product.price_catalog)}</p>}
                     </div>
-                  </a>
+                  </Link>
                 );
               })}
             </div>
