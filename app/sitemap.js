@@ -1,129 +1,116 @@
 import { supabase } from '../lib/supabase';
 
-export const dynamic = 'force-dynamic';
-
 export default async function sitemap() {
   const baseUrl = 'https://www.ideescasa.fr';
 
+  let uniqueProducts = [];
+  let productRoutes = [];
+  let brandRoutes = [];
+
+  // 1. Récupération dynamique des produits uniques (Vue best_products)
   try {
-    // 1. Extraction des données produits nécessaires (Specs, Slugs, Marques et Catégories)
     const { data: products } = await supabase
       .from('best_products')
-      .select('slug, brand, category, updated_at, last_hunt_at')
+      .select('slug, brand, category, updated_at, last_hunt_at, specs, image_url') // ◄ FIX CLAUDE : Sélection enrichie
       .not('slug', 'is', null);
 
-    // 2. Extraction des articles du Lab (Blog informatique)
-    const { data: articles } = await supabase
-      .from('articles')
-      .select('slug, reviewed_at');
+    if (products) {
+      uniqueProducts = products; 
+      
+      // Fiches produits individuelles
+      productRoutes = products.map((product) => ({
+        url: `${baseUrl}/machines/${product.slug}`,
+        lastModified: product.last_hunt_at ? new Date(product.last_hunt_at) : new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      }));
 
-    // Initialisation avec la page d'accueil
-    const entries = [
-      {
-        url: baseUrl,
-        lastModified: new Date().toISOString(),
-        changeFrequency: 'daily',
-        priority: 1.0,
-      },
-    ];
+      // Pages marques pSEO (Conservées & Sécurisées)
+      const rawBrands = products.map(p => p.brand).filter(Boolean);
+      const uniqueBrands = [...new Set(rawBrands.map(b => b.toLowerCase()))];
 
-    if (products && products.length > 0) {
-      // A. GÉNÉRATION DES FICHES PRODUITS
-      products.forEach((product) => {
-        const dateRaw = product.updated_at || product.last_hunt_at || new Date();
-        entries.push({
-          url: `${baseUrl}/machines/${product.slug}`,
-          lastModified: new Date(dateRaw).toISOString(),
-          changeFrequency: 'weekly',
-          priority: 0.8,
-        });
-      });
-
-      // B. GÉNÉRATION DYNAMIQUE DES PAGES MARQUES (pSEO)
-      const rawBrands = products.map((p) => p.brand).filter(Boolean);
-      const uniqueBrands = [...new Set(rawBrands.map((b) => b.toLowerCase()))];
-
-      uniqueBrands.forEach((brandSlug) => {
-        const brandProducts = products.filter((p) => p.brand?.toLowerCase() === brandSlug);
+      brandRoutes = uniqueBrands.map((brandSlug) => {
+        const brandProducts = products.filter(p => p.brand?.toLowerCase() === brandSlug);
         const latestUpdate = brandProducts.reduce((acc, current) => {
-          const checkDate = current.updated_at || current.last_hunt_at;
-          const currentDate = checkDate ? new Date(checkDate) : new Date(0);
+          const currentDate = current.last_hunt_at ? new Date(current.last_hunt_at) : new Date(0);
           return currentDate > acc ? currentDate : acc;
         }, new Date(0));
 
-        entries.push({
+        return {
           url: `${baseUrl}/marques/${brandSlug}`,
-          lastModified: latestUpdate.getTime() === new Date(0).getTime() ? new Date().toISOString() : latestUpdate.toISOString(),
+          lastModified: latestUpdate.getTime() === new Date(0).getTime() ? new Date() : latestUpdate,
           changeFrequency: 'daily',
           priority: 0.7,
-        });
+        };
       });
+    }
+  } catch (e) {
+    console.error("Sitemap: Erreur récupération produits et marques", e);
+  }
 
-      // ◄ NOUVEAU ► C. GÉNÉRATION DYNAMIQUE DES PAGES GUIDES / CATÉGORIES (pSEO)
-      const rawCategories = products.map((p) => p.category).filter(Boolean);
-      const uniqueCategories = [...new Set(rawCategories.map((c) => c.toLowerCase()))];
+  // 2. GÉNÉRATION DES COMBINAISONS DU COMPARATEUR (FIX BUG #1 — ANTI-THIN CONTENT)
+  let comparisonRoutes = [];
+  try {
+    if (uniqueProducts.length > 1) {
+      const sortedProducts = [...uniqueProducts].sort((a, b) => a.slug.localeCompare(b.slug));
 
-      uniqueCategories.forEach((catSlug) => {
-        const catProducts = products.filter((p) => p.category?.toLowerCase() === catSlug);
-        const latestUpdate = catProducts.reduce((acc, current) => {
-          const checkDate = current.updated_at || current.last_hunt_at;
-          const currentDate = checkDate ? new Date(checkDate) : new Date(0);
-          return currentDate > acc ? currentDate : acc;
-        }, new Date(0));
+      // ◄ FIX CRITIQUE CLAUDE : Uniquement les produits avec specs ET images réelles pour éviter les pages vides
+      const comparableProducts = sortedProducts.filter(p => 
+        p.image_url && 
+        p.specs && 
+        typeof p.specs === 'object' && 
+        Object.keys(p.specs).length > 2
+      );
 
-        entries.push({
-          url: `${baseUrl}/guides/${catSlug}`,
-          lastModified: latestUpdate.getTime() === new Date(0).getTime() ? new Date().toISOString() : latestUpdate.toISOString(),
-          changeFrequency: 'daily',
-          priority: 0.7,
-        });
-      });
+      for (let i = 0; i < comparableProducts.length; i++) {
+        for (let j = i + 1; j < comparableProducts.length; j++) {
+          const pA = comparableProducts[i];
+          const pB = comparableProducts[j];
 
-      // D. MOTEUR pSEO : Combinaisons croisées du Comparateur (Duels)
-      const sortedProducts = [...products].sort((a, b) => a.slug.localeCompare(b.slug));
-      for (let i = 0; i < sortedProducts.length; i++) {
-        for (let j = i + 1; j < sortedProducts.length; j++) {
-          const pA = sortedProducts[i];
-          const pB = sortedProducts[j];
+          const dateA = pA.last_hunt_at ? new Date(pA.last_hunt_at) : new Date();
+          const dateB = pB.last_hunt_at ? new Date(pB.last_hunt_at) : new Date();
+          const mostRecentDate = dateA > dateB ? dateA : dateB;
 
-          const dateA = pA.updated_at || pA.last_hunt_at || new Date();
-          const dateB = pB.updated_at || pB.last_hunt_at || new Date();
-          const mostRecentDate = new Date(dateA) > new Date(dateB) ? dateA : dateB;
-
-          entries.push({
+          comparisonRoutes.push({
             url: `${baseUrl}/comparatif/${pA.slug}-vs-${pB.slug}`,
-            lastModified: new Date(mostRecentDate).toISOString(),
+            lastModified: mostRecentDate,
             changeFrequency: 'weekly',
-            priority: 0.6,
+            priority: 0.6, 
           });
         }
       }
     }
-
-    // E. GÉNÉRATION DES ARTICLES DU LAB (Le Blog)
-    if (articles && articles.length > 0) {
-      articles.forEach((article) => {
-        const dateRaw = article.reviewed_at || new Date();
-        entries.push({
-          url: `${baseUrl}/article/${article.slug}`,
-          lastModified: new Date(dateRaw).toISOString(),
-          changeFrequency: 'weekly',
-          priority: 0.7,
-        });
-      });
-    }
-
-    return entries;
-
-  } catch (error) {
-    console.error('Erreur lors de la compilation du sitemap unifié:', error);
-    return [
-      {
-        url: baseUrl,
-        lastModified: new Date().toISOString(),
-        changeFrequency: 'daily',
-        priority: 1.0,
-      },
-    ];
+  } catch (e) {
+    console.error("Sitemap: Erreur génération comparatifs pSEO", e);
   }
+
+  // 3. Récupération dynamique des articles
+  let articleRoutes = [];
+  try {
+    const { data: articles } = await supabase
+      .from('articles')
+      .select('slug, created_at')
+      .not('slug', 'is', null);
+
+    if (articles) {
+      articleRoutes = articles.map((article) => ({
+        url: `${baseUrl}/article/${article.slug}`,
+        lastModified: article.created_at ? new Date(article.created_at) : new Date(),
+        changeFrequency: 'monthly',
+        priority: 0.6,
+      }));
+    }
+  } catch (e) {
+    console.error("Sitemap: Erreur récupération articles", e);
+  }
+
+  // 4. Routes statiques (Identité et Confiance E-E-A-T)
+  const staticRoutes = [
+    { url: baseUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
+    { url: `${baseUrl}/contact`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${baseUrl}/mentions-legales`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${baseUrl}/politique-confidentialite`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+  ];
+
+  return [...staticRoutes, ...brandRoutes, ...productRoutes, ...comparisonRoutes, ...articleRoutes];
 }
