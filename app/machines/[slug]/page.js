@@ -95,6 +95,3 @@ export default async function ProductPage({ params }) {
     </main>
   );
 }
-  
-  // ... reste de ton code ...
-}
