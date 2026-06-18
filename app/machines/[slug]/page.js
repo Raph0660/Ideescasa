@@ -1,6 +1,6 @@
 {/* ENRICHISSEMENT SÉMANTIQUE PAR FUSION TECH & IA */}
 <div className="max-w-6xl mx-auto px-6">
-  {product?.specs && Object.keys(product.specs).length > 0 && (
+  {product?.specs && (
     <section className="mt-16 border-t border-stone-200 pt-16 text-left">
       <h3 className="font-serif text-3xl text-stone-900 mb-8 italic font-bold">
         Analyse des Caractéristiques & Verdict
@@ -11,17 +11,16 @@
         <div className="bg-emerald-50/50 border border-emerald-100 p-6 rounded-sm">
           <h4 className="font-sans font-bold text-xs uppercase tracking-wider text-emerald-800 mb-4">Les Points Forts</h4>
           {(() => {
-            const pros = product?.specs?.pros;
-            if (Array.isArray(pros) && pros.length > 0) {
-              return (
-                <ul className="space-y-2 text-sm text-stone-600 font-light">
-                  {pros.map((pro, i) => (
-                    <li key={i}>✓ {pro}</li>
-                  ))}
-                </ul>
-              );
-            }
-            return <p className="text-stone-400 italic text-sm">Aucun avantage spécifique détecté.</p>;
+            const pros = product.specs?.pros;
+            return Array.isArray(pros) && pros.length > 0 ? (
+              <ul className="space-y-2 text-sm text-stone-600 font-light">
+                {pros.map((pro, i) => (
+                  <li key={i}>✓ {pro}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-stone-400 italic text-sm">Aucun avantage spécifique détecté.</p>
+            );
           })()}
         </div>
 
@@ -29,17 +28,16 @@
         <div className="bg-red-50/50 border border-red-100 p-6 rounded-sm">
           <h4 className="font-sans font-bold text-xs uppercase tracking-wider text-red-800 mb-4">Les Limites à prendre en compte</h4>
           {(() => {
-            const cons = product?.specs?.cons;
-            if (Array.isArray(cons) && cons.length > 0) {
-              return (
-                <ul className="space-y-2 text-sm text-stone-600 font-light">
-                  {cons.map((con, i) => (
-                    <li key={i}>✕ {con}</li>
-                  ))}
-                </ul>
-              );
-            }
-            return <p className="text-stone-400 italic text-sm">Aucune limitation majeure détectée.</p>;
+            const cons = product.specs?.cons;
+            return Array.isArray(cons) && cons.length > 0 ? (
+              <ul className="space-y-2 text-sm text-stone-600 font-light">
+                {cons.map((con, i) => (
+                  <li key={i}>✕ {con}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-stone-400 italic text-sm">Aucune limitation majeure détectée.</p>
+            );
           })()}
         </div>
       </div>
@@ -72,16 +70,10 @@
                 <td className="p-4">{product.specs.puissance_watts} Watts</td>
               </tr>
             )}
-            {product.specs?.broyeur_integre === true && (
+            {(product.specs?.broyeur_integre === true || product.specs?.broyeur_integre === false) && (
               <tr>
                 <td className="p-4 font-medium text-stone-900 bg-stone-50/30">Broyeur à grains intégré</td>
-                <td className="p-4">Oui (Moulin intégré)</td>
-              </tr>
-            )}
-            {product.specs?.broyeur_integre === false && (
-              <tr>
-                <td className="p-4 font-medium text-stone-900 bg-stone-50/30">Broyeur à grains intégré</td>
-                <td className="p-4">Non</td>
+                <td className="p-4">{product.specs.broyeur_integre ? "Oui (Moulin intégré)" : "Non"}</td>
               </tr>
             )}
             {product.specs?.capacite_grains_grammes && (
