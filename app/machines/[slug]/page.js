@@ -1,6 +1,6 @@
 {/* ENRICHISSEMENT SÉMANTIQUE PAR FUSION TECH & IA */}
       <div className="max-w-6xl mx-auto px-6">
-        {product.specs && (
+        {product?.specs && (
           <section className="mt-16 border-t border-stone-200 pt-16 text-left">
             <h3 className="font-serif text-3xl text-stone-900 mb-8 italic font-bold">
               Analyse des Caractéristiques & Verdict
@@ -46,37 +46,37 @@
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100">
-                  {product.specs.reservoir_eau_litres && (
+                  {product.specs?.reservoir_eau_litres && (
                     <tr>
                       <td className="p-4 font-medium text-stone-900 bg-stone-50/30 w-1/2">Capacité du réservoir</td>
                       <td className="p-4">{product.specs.reservoir_eau_litres} Litres</td>
                     </tr>
                   )}
-                  {product.specs.pression_bars && (
+                  {product.specs?.pression_bars && (
                     <tr>
                       <td className="p-4 font-medium text-stone-900 bg-stone-50/30">Pression de la pompe</td>
                       <td className="p-4">{product.specs.pression_bars} Bars</td>
                     </tr>
                   )}
-                  {product.specs.puissance_watts && (
+                  {product.specs?.puissance_watts && (
                     <tr>
                       <td className="p-4 font-medium text-stone-900 bg-stone-50/30">Puissance nominale</td>
                       <td className="p-4">{product.specs.puissance_watts} Watts</td>
                     </tr>
                   )}
-                  {product.specs.broyeur_integre !== undefined && (
+                  {product.specs?.broyeur_integre !== undefined && product.specs?.broyeur_integre !== null && (
                     <tr>
                       <td className="p-4 font-medium text-stone-900 bg-stone-50/30">Broyeur à grains intégré</td>
                       <td className="p-4">{product.specs.broyeur_integre ? "Oui (Moulin intégré)" : "Non"}</td>
                     </tr>
                   )}
-                  {product.specs.capacite_grains_grammes && (
+                  {product.specs?.capacite_grains_grammes && (
                     <tr>
                       <td className="p-4 font-medium text-stone-900 bg-stone-50/30">Capacité du bac à grains</td>
                       <td className="p-4">{product.specs.capacite_grains_grammes} grammes</td>
                     </tr>
                   )}
-                  {product.specs.type_chauffe && (
+                  {product.specs?.type_chauffe && (
                     <tr>
                       <td className="p-4 font-medium text-stone-900 bg-stone-50/30">Système de chauffe</td>
                       <td className="p-4">{product.specs.type_chauffe}</td>
